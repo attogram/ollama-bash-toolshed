@@ -17,6 +17,7 @@ For small models that support tool usage, see: <https://github.com/attogram/smal
 * [getBashVersion](tools/getBashVersion) — Get the bash version installed
 * [getDateTime](tools/getDateTime) — Get the current date and time
 * [getOllamaVersion](tools/getOllamaVersion) — Get ollama version installed
+* [getOllamaModelList](tools/getOllamaModelList) — Get the list of models installed in ollama
 * [getWebPage](tools/getWebPage) — Get a web page
 
 ## Add a new tool

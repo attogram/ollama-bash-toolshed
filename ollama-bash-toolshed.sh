@@ -6,7 +6,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.2"
+VERSION="0.3"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"

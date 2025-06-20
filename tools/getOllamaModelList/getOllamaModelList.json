@@ -1,0 +1,12 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getOllamaModelList",
+    "description": "Get list of models installed in ollama",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
+}

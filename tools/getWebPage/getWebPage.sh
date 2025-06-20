@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
+#
+# Ollama Bash Toolshed - Get a web page
 
 arguments="$@"
-#echo "DEBUG: arguments: $arguments"
-
 url=$(echo "$arguments" | jq -r '.url')
-#echo "DEBUG: url: $url"
 
 userAgent="ollama-bash-toolshed"
 
