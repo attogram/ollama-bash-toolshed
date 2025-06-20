@@ -13,6 +13,7 @@ For small models that support tool usage, see: <https://github.com/attogram/smal
 
 ## Tools in the shed
 
+* [calculator](tools/calculator) — Do math calculations
 * [getBashVersion](tools/getBashVersion) — Get the bash version installed
 * [getDateTime](tools/getDateTime) — Get the current date and time
 * [getOllamaVersion](tools/getOllamaVersion) — Get ollama version installed
