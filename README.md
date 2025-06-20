@@ -32,7 +32,7 @@ To add a new tool:
 
 ## Example chat
 
-```
+```html
 % ./ollama-bash-toolshed.sh qwen3:8b
 
 ollama-bash-toolshed v0.1
