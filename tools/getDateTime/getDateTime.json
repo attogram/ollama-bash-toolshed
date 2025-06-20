@@ -1,0 +1,12 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getDateTime",
+    "description": "Get the current date and time",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
+}

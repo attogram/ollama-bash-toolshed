@@ -1,0 +1,12 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getBashVersion",
+    "description": "Get Bash version installed on the system",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
+}

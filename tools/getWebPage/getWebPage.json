@@ -1,0 +1,17 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getWebPage",
+    "description": "Get a web page from the internet. Example: getWebPage \"https://www.ollama.com/\"",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL of the web page"
+        }
+      },
+      "required": ["url"]
+    }
+  }
+}
