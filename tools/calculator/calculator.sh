@@ -5,8 +5,6 @@
 arguments="$@"
 input=$(echo "$arguments" | jq -r '.input')
 
-echo "DEBUG: calculator input: $input"
-
 if [ -z "${input}" ]; then
   echo "Error: Please specify match calculation as input";
 else
