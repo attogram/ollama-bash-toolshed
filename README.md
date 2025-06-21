@@ -13,6 +13,19 @@ You MUST use a model with tools capabilities.
 * See the [ollama.com Tools models](https://ollama.com/search?c=tools) list.
 * See the [small models for tool-usage](https://github.com/attogram/small-models/tree/main#tool-usage) list.
  
+## User commands
+
+Ollama Bash Toolshed User Commands:
+
+* ```/help``` - list of commands
+* ```/list``` - get models installed
+* ```/load <modelName>``` - load the model
+* ```/show <modelName>``` - show info about model
+* ```/clear``` - clear the message cache
+* ```/tools``` - list tools available
+* ```/run <toolName> parameterName=parameterValue``` - run a tool
+* ```/quit``` or /bye``` - end the chat
+
 ## Tools in the shed
 
 * [calculator](tools/calculator) — Do math calculations

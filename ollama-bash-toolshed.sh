@@ -160,6 +160,7 @@ processUserCommand() {
       echo "  /tools - list tools available"
       echo "  /run <toolName> \"parameterName=parameterValue\" - run a tool"
       echo "  /quit or /bye - end the chat"
+      echo "  /help - list of commands"
       ;;
     /quit|/bye)
       echo "Stopping the Ollama Bash Toolshed. Bye!"
