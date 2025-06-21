@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "getOllamaModelList",
-    "description": "Get list of models installed in ollama",
+    "description": "Get list of models installed in Ollama",
     "parameters": {
       "type": "object",
       "properties": {},

@@ -1,0 +1,17 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getManualForCommand",
+    "description": "Get the manual page for a command",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The command"
+        }
+      },
+      "required": ["command"]
+    }
+  }
+}

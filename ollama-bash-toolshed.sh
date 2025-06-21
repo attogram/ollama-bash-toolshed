@@ -2,16 +2,17 @@
 #
 # Ollama Bash Toolshed
 #
-# For small models that support tool usage see: <https://github.com/attogram/small-models/tree/main#tool-usage>
+# For small models that support tool usage see:
+#  <https://github.com/attogram/small-models/tree/main#tool-usage>
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.5"
+VERSION="0.6"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
 
-echo; echo "$NAME v$VERSION"; echo
+echo; echo "$NAME v$VERSION";
 
 model=""
 messages=""
@@ -76,7 +77,7 @@ EOF
 }
 
 sendRequestToAPI() {
-  curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d "$(createRequest)"
+  echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
 }
 
 processErrors() {
@@ -143,12 +144,13 @@ chat() {
 
 checkRequirements() {
   local requirements=(
-    "ollama --version"
-    "basename --version"
-    "curl --version"
-    "jq --version"
-    "bc --version"
-    "date --version"
+    "ollama --version"   # core
+    "basename --version" # core
+    "curl --version"     # core
+    "jq --version"       # core
+    "bc --version"       # for calculator
+    "date --version"     # for getDateTime
+    "man -P cat man"     # for getManualPageForCommand
   )
   local check=""
   local cmd=""
@@ -174,12 +176,12 @@ if [ -z "${model}" ]; then
   exit 1
 fi
 
-echo "Model: $model"
+echo; echo "Model: $model"
 
 getTools
-echo "Available Tools: ${availableTools[*]}";
+echo; echo "Available Tools: ${availableTools[*]}";
 
-echo "Press Ctrl+C to exit"
+echo; echo "Press Ctrl+C to exit"
 
 while true; do
     echo; echo -n "Prompt: "

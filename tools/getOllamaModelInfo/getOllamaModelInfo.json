@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "getOllamaModelInfo",
-    "description": "Get info about an ollama model.  Model info (architecture, parameters, context length, embedding length, quantization), Capabilities, Parameters, License, etc",
+    "description": "Get info about an ollama model. Model info (architecture, parameters, context length, embedding length, quantization), Capabilities, Parameters, License, etc",
     "parameters": {
       "type": "object",
       "properties": {
