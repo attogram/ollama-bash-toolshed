@@ -1,6 +1,6 @@
 # Tools Directory
 
-This is the tools directory for the [Ollama Bash Toolshed](../../).
+This is the tools directory for the [Ollama Bash Toolshed](../).
 
 Each subdirectory is a tool.
 
