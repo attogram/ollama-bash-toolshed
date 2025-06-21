@@ -141,6 +141,7 @@ processUserCommand() {
       echo "  /show <modelName> - show info about model"
       echo "  /clear - clear the message cache"
       echo "  /tools - list tools available"
+      echo "  /run <toolName> \"parameterName=parameterValue\" - run a tool"
       echo "  /quit or /bye - end the chat"
       ;;
     /quit|/bye)
@@ -168,6 +169,23 @@ processUserCommand() {
       echo "Tools available: ${availableTools[*]}"
       echo; echo "Tool definitions:"
       echo "${toolDefinitions}"
+      ;;
+    /run)
+      local tool="${commandArray[1]}"
+      if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
+        echo "Running tool: $tool"
+        local parameters="${commandArray[2]}"
+        IFS='=' read -r -a parametersArray <<< "$parameters"
+        #  strip quotes from start and end
+        parametersArray[0]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[0]}")
+        parametersArray[1]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[1]}")
+        local parametersJson="{\"${parametersArray[0]}\": \"${parametersArray[1]}\"}"
+        echo "Parameters: $parametersJson"
+        local toolFileCall="./tools/${tool}/${tool}.sh ${parametersJson}"
+        echo; echo "$($toolFileCall)"
+      else
+        echo "Error: tool not in the shed"
+      fi
       ;;
     *)
       echo "ERROR: Unknown command: ${commandArray[0]}"
