@@ -6,7 +6,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.4"
+VERSION="0.5"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -140,6 +140,31 @@ chat() {
   #debug "Assistant Response:\n"
   echo "$responseMessageContent"
 }
+
+checkRequirements() {
+  local requirements=(
+    "ollama --version"
+    "basename --version"
+    "curl --version"
+    "jq --version"
+    "bc --version"
+    "date --version"
+  )
+  local check=""
+  local cmd=""
+  for requirement in "${requirements[@]}"; do
+    set -- $requirement
+    cmd="$1" # get first word
+    check=$($requirement 2> /dev/null)
+    if [ -z "$check" ]; then
+      echo "Requirement ERROR: $cmd not installed."
+    else 
+      debug "Requirement OK: $cmd installed"
+    fi
+  done
+}
+
+checkRequirements
 
 parseCommandLine "$@"
 if [ -z "${model}" ]; then
