@@ -18,10 +18,11 @@ You MUST use a model with tools capabilities.
 * [calculator](tools/calculator) — Do math calculations
 * [getBashVersion](tools/getBashVersion) — Get the bash version installed
 * [getDateTime](tools/getDateTime) — Get the current date and time
+* [getManual](tools/getManual) - get man page for a command
 * [getOllamaModelInfo](tools/getOllamaModelInfo) — Get info about an ollama model
 * [getOllamaModelList](tools/getOllamaModelList) — Get the list of models installed in ollama
 * [getOllamaVersion](tools/getOllamaVersion) — Get ollama version installed
-* [getWebPage](tools/getWebPage) — Get a web page
+* [getWebPageHtml](tools/getWebPageHtml) — Get HTML of a web page
 
 ## Add a new tool
 
