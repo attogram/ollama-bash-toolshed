@@ -246,6 +246,7 @@ checkRequirements() {
     "curl --version"     # core
     "jq --version"       # core
     "expect -v"          # core
+    "sed --version"      # core
     "bc --version"       # for calculator
     "date --version"     # for getDateTime
     "man -P cat man"     # for getManualPageForCommand
