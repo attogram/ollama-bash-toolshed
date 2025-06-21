@@ -9,7 +9,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.7"
+VERSION="0.8"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -82,6 +82,23 @@ EOF
 
 sendRequestToAPI() {
   echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
+}
+
+clearModel() {
+  echo "Clearing model session: $model"
+  (
+    expect \
+    -c "spawn ollama run $model" \
+    -c "expect \">>> \"" \
+    -c 'send -- "/clear\n"' \
+    -c "expect \"Cleared session context\"" \
+    -c 'send -- "/bye\n"' \
+    -c "expect eof" \
+    ;
+  ) # > /dev/null 2>&1 # Suppress output
+  if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to clear model session: $model" >&2
+  fi
 }
 
 processErrors() {
@@ -158,7 +175,7 @@ processUserCommand() {
       echo "Clearing message list"
       message=()
       messageCount=0
-      # TODO - use expect to send /clear to ollama
+      clearModel
       ;;
     /load)
       local newModel="${commandArray[1]}"
@@ -228,6 +245,7 @@ checkRequirements() {
     "basename --version" # core
     "curl --version"     # core
     "jq --version"       # core
+    "expect -v"          # core
     "bc --version"       # for calculator
     "date --version"     # for getDateTime
     "man -P cat man"     # for getManualPageForCommand
