@@ -2,12 +2,14 @@
 #
 # Ollama Bash Toolshed
 #
-# For small models that support tool usage see:
-#  <https://github.com/attogram/small-models/tree/main#tool-usage>
+# Bash scripts to chat with tool using models. Add new tools to your shed with ease. Runs on Ollama.
+#
+# Usage:
+#  ./ollama-bash-toolshed.sh "modelname"
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.6"
+VERSION="0.7"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -16,6 +18,7 @@ echo; echo "$NAME v$VERSION";
 
 model=""
 messages=""
+messageCount=0
 toolDefinitions=""
 availableTools=()
 
@@ -62,7 +65,8 @@ addMessage() {
   fi
   message=$(safeJson "$message")
   messages+="{\"role\":\"$role\",\"content\":$message}"
-  debug "addMessage: role: $role - content: $message"
+  ((messageCount++))
+  debug "addMessage # $messageCount: role: $role - content: $message"
 }
 
 createRequest() {
@@ -86,7 +90,7 @@ processErrors() {
       echo "Error: $error"
       return 1
     fi
-    return 0
+    return 0 # no errors
 }
 
 processToolCall() {
@@ -120,22 +124,74 @@ processToolCall() {
   fi
 }
 
+processUserCommand() {
+  firstChar=${prompt:0:1}
+  if [ "$firstChar" != "/" ]; then
+    return 1 # no user command was processed
+  fi
+
+  IFS=' ' read -r -a commandArray <<< "$prompt"
+
+  case ${commandArray[0]} in
+
+    /help)
+      echo "Ollama Bash Toolshed User Commands:"
+      echo "  /list - get models installed"
+      echo "  /load <modelName> - load the model"
+      echo "  /show <modelName> - show info about model"
+      echo "  /clear - clear the message cache"
+      echo "  /quit or /bye - end the chat"
+      ;;
+    /quit|/bye)
+      echo "Stopping the Ollama Bash Toolshed. Bye!"
+      exit
+      ;;
+    /list)
+      ollama list
+      ;;
+    /show)
+      ollama show "${commandArray[1]}"
+      ;;
+    /clear)
+      echo "Clearing message list"
+      message=()
+      messageCount=0
+      # TODO - use expect to send /clear to ollama
+      ;;
+    /load)
+      local newModel="${commandArray[1]}"
+      echo "Loading model: $newModel"
+      model="$newModel"
+      ;;
+    *)
+      echo "ERROR: Unknown command: ${commandArray[0]}"
+      ;;
+  esac
+
+  return 0 # user command was processed
+}
+
 chat() {
   local prompt="$1"
+
+  processUserCommand
+  if [[ $? = 0 ]]; then # If a user command was processed
+    return
+  fi
 
   addMessage "user" "$prompt"
   #debug "Calling $OLLAMA_API_URL"
   debug "chat: about to send to API: createRequest: $(createRequest)"
   response=$(sendRequestToAPI)
-  debug "1st response: $(echo "$response" | jq -r '.' 2>/dev/null)"
+  #debug "1st response: $(echo "$response" | jq -r '.' 2>/dev/null)"
 
   processErrors
-  if [[ $? != 0 ]]; then
+  if [[ $? = 1 ]]; then # If there was an error
     return
   fi
 
   processToolCall
-  debug "2nd response: $(echo "$response" | jq -r '.' 2>/dev/null)"
+  #debug "2nd response: $(echo "$response" | jq -r '.' 2>/dev/null)"
   responseMessageContent=$(echo "$response" | jq -r '.message.content')
   addMessage "assistant" "$responseMessageContent"
   #debug "Assistant Response:\n"
@@ -173,18 +229,17 @@ if [ -z "${model}" ]; then
   echo "Error: no model. Usage: ./${0##*/} \"modelname\"";
   echo; echo "Your local models:"
   ollama list
-  exit 1
+  echo "type /load modelName to load a model"
+  #exit 1
 fi
 
 echo; echo "Model: $model"
-
 getTools
-echo; echo "Available Tools: ${availableTools[*]}";
-
-echo; echo "Press Ctrl+C to exit"
+echo; echo "Tools: ${availableTools[*]}";
+echo; echo "type /help for user commands.  Press Ctrl+C to exit"
 
 while true; do
-    echo; echo -n "Prompt: "
+    echo; echo -n "($model) [$messageCount] Prompt: "
     read -r prompt
     echo
     chat "$prompt"
