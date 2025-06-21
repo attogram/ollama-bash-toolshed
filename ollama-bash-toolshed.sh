@@ -9,7 +9,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.8"
+VERSION="0.9"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -250,6 +250,7 @@ checkRequirements() {
     "bc --version"       # for calculator
     "date --version"     # for getDateTime
     "man -P cat man"     # for getManualPageForCommand
+    "lynx --version"     # for getWebPageText
   )
   local check=""
   local cmd=""
@@ -282,7 +283,8 @@ echo; echo "Tools: ${availableTools[*]}";
 echo; echo "type /help for user commands.  Press Ctrl+C to exit"
 
 while true; do
-    echo; echo -n "($model) [$messageCount] Prompt: "
+    echo; echo "($model) [$messageCount messages] [${#messages} characters]"
+    echo -n "Prompt: "
     read -r prompt
     echo
     chat "$prompt"

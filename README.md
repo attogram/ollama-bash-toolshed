@@ -23,6 +23,7 @@ You MUST use a model with tools capabilities.
 * [getOllamaModelList](tools/getOllamaModelList) — Get the list of models installed in ollama
 * [getOllamaVersion](tools/getOllamaVersion) — Get ollama version installed
 * [getWebPageHtml](tools/getWebPageHtml) — Get HTML of a web page
+* [getWebPageText](tools/getWebPageText) — Get the text of a web page
 
 ## Add a new tool
 
