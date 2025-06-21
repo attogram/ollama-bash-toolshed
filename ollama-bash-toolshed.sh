@@ -140,6 +140,7 @@ processUserCommand() {
       echo "  /load <modelName> - load the model"
       echo "  /show <modelName> - show info about model"
       echo "  /clear - clear the message cache"
+      echo "  /tools - list tools available"
       echo "  /quit or /bye - end the chat"
       ;;
     /quit|/bye)
@@ -162,6 +163,11 @@ processUserCommand() {
       local newModel="${commandArray[1]}"
       echo "Loading model: $newModel"
       model="$newModel"
+      ;;
+    /tools)
+      echo "Tools available: ${availableTools[*]}"
+      echo; echo "Tool definitions:"
+      echo "${toolDefinitions}"
       ;;
     *)
       echo "ERROR: Unknown command: ${commandArray[0]}"
