@@ -9,7 +9,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.9"
+VERSION="0.10"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -174,7 +174,7 @@ processUserCommand() {
       ;;
     /clear)
       echo "Clearing message list"
-      message=()
+      messages=""
       messageCount=0
       clearModel
       ;;
