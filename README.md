@@ -8,8 +8,10 @@ Chat with a tool usage model:
 ```
 ./ollama-bash-toolshed.sh "modelname"
 ```
-  
-* See [small models for tool-usage](https://github.com/attogram/small-models/tree/main#tool-usage) list
+
+You MUST use a model with tools capabilities.
+* See the [ollama.com Tools models](https://ollama.com/search?c=tools) list.
+* See the [small models for tool-usage](https://github.com/attogram/small-models/tree/main#tool-usage) list.
  
 ## Tools in the shed
 
@@ -22,6 +24,8 @@ Chat with a tool usage model:
 * [getWebPage](tools/getWebPage) — Get a web page
 
 ## Add a new tool
+
+Read about the [tools setup](tools/README.md).
 
 To add a new tool:
 
