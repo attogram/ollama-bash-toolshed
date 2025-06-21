@@ -4,13 +4,13 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 
 ## Usage
 
-- Chat with a tool usage model:
-  ```
-  ./ollama-bash-toolshed.sh "modelname"
-  ```
+Chat with a tool usage model:
+```
+./ollama-bash-toolshed.sh "modelname"
+```
   
-For small models that support tool usage, see: <https://github.com/attogram/small-models/tree/main#tool-usage>
-
+* See [small models for tool-usage](https://github.com/attogram/small-models/tree/main#tool-usage) list
+ 
 ## Tools in the shed
 
 * [calculator](tools/calculator) — Do math calculations
