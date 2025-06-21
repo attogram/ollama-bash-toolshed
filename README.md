@@ -24,7 +24,7 @@ Ollama Bash Toolshed User Commands:
 * ```/clear``` - clear the message cache
 * ```/tools``` - list tools available
 * ```/run <toolName> parameterName=parameterValue``` - run a tool
-* ```/quit``` or /bye``` - end the chat
+* ```/quit``` or ```/bye``` - end the chat
 
 ## Tools in the shed
 
