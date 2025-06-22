@@ -28,12 +28,13 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 Ollama Bash Toolshed User Commands:
 
 * ```/help``` - list of commands
-* ```/list``` - get models installed
+* ```/list``` - view models installed
 * ```/load <modelName>``` - load the model
-* ```/show <modelName>``` - show info about model
-* ```/clear``` - clear the message cache
+* ```/show <modelName>``` - view info about model
 * ```/tools``` - list tools available
 * ```/run <toolName> parameterName=parameterValue``` - run a tool
+* ```/messages``` - list of current messages
+* ```/clear``` - clear the message cache
 * ```/quit``` or ```/bye``` - end the chat
 
 ## Tools in the shed

@@ -5,11 +5,12 @@
 # Bash scripts to chat with tool using models. Add new tools to your shed with ease. Runs on Ollama.
 #
 # Usage:
-#  ./ollama-bash-toolshed.sh "modelname"
+#  ./ollama-bash-toolshed.sh
+#  ./ollama-bash-toolshed.sh modelname
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.13"
+VERSION="0.14"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -86,7 +87,7 @@ EOF
 }
 
 sendRequestToAPI() {
-  ((requestCount++))
+  # ((requestCount++))
   echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
 }
 
@@ -141,6 +142,7 @@ processToolCall() {
       addMessage "tool" "$result" # Add tool response to messages
       debug "tools: about to send to API: createRequest: $(createRequest)"
       response=$(sendRequestToAPI)
+      ((requestCount++))
       debug "tools response: $(echo "$response" | jq -r '.' 2>/dev/null)"
 
     done < <(echo "$tool_calls" | jq -c '.')
@@ -152,19 +154,17 @@ processUserCommand() {
   if [ "$firstChar" != "/" ]; then
     return 1 # no user command was processed
   fi
-
   IFS=' ' read -r -a commandArray <<< "$prompt"
-
   case ${commandArray[0]} in
-
     /help)
       echo "Ollama Bash Toolshed User Commands:"
       echo "  /list - get models installed"
       echo "  /load <modelName> - load the model"
       echo "  /show <modelName> - show info about model"
-      echo "  /clear - clear the message cache"
       echo "  /tools - list tools available"
-      echo "  /run <toolName> \"parameterName=parameterValue\" - run a tool"
+      echo "  /run <toolName> <parameterName=parameterValue> - run a tool, with optional parameters"
+      echo "  /messages - list of current messages"
+      echo "  /clear - clear the message and model cache"
       echo "  /quit or /bye - end the chat"
       echo "  /help - list of commands"
       ;;
@@ -178,10 +178,15 @@ processUserCommand() {
     /show)
       ollama show "${commandArray[1]}"
       ;;
+    /messages)
+      # echo "$messages"
+      echo "{ \"messages\": [ ${messages} ] }" | jq -r . 2>/dev/null
+      ;;
     /clear)
       echo "Clearing message list"
       messages=""
       messageCount=0
+      echo "Clearing model cache"
       clearModel
       ;;
     /load)
@@ -215,7 +220,6 @@ processUserCommand() {
       echo "ERROR: Unknown command: ${commandArray[0]}"
       ;;
   esac
-
   return 0 # user command was processed
 }
 
@@ -231,6 +235,7 @@ chat() {
   #debug "Calling $OLLAMA_API_URL"
   debug "chat: about to send to API: createRequest: $(createRequest)"
   response=$(sendRequestToAPI)
+  ((requestCount++))
   #debug "1st response: $(echo "$response" | jq -r '.' 2>/dev/null)"
 
   processErrors
@@ -279,13 +284,11 @@ checkRequirements
 parseCommandLine "$@"
 
 if [ -z "${model}" ]; then
-  echo; echo "Error: no model loaded.";
-  echo; echo "Available models:"
+  echo; echo "No model is loaded. Available models:"; echo
   ollama list
   echo; echo "To load a model: /load modelName"
 fi
 
-echo; echo "Model: $model"
 getTools
 echo; echo "Tools: ${availableTools[*]}";
 echo; echo "type /help for user commands.  Press Ctrl+C to exit."
