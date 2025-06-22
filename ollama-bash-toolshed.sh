@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.14"
+VERSION="0.15"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -81,13 +81,13 @@ createRequest() {
   "model": "$model",
   "messages": [ ${messages} ],
   "stream": false,
+  "think": true,
   "tools": [ ${toolDefinitions} ]
 }
 EOF
 }
 
 sendRequestToAPI() {
-  # ((requestCount++))
   echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
 }
 
@@ -119,6 +119,18 @@ processErrors() {
 
 processToolCall() {
   if echo "$response" | jq -e '.message.tool_calls' >/dev/null; then # Check if response contains tool_calls
+
+
+    local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
+    if [ -n "$responseMessageThinking" ]; then
+      echo "💭 $responseMessageThinking 💭"; echo
+    fi
+
+    local responseMessageContent=$(echo "$response" | jq -r '.message.content')
+    if [ -n "$responseMessageContent" ]; then
+      echo "$responseMessageContent"
+    fi
+
     #debug "Tool calls detected"
     local tool_calls=$(echo "$response" | jq -r '.message.tool_calls[]') # get all tool calls
     while IFS= read -r tool_call; do # Process each tool call
@@ -131,16 +143,17 @@ processToolCall() {
         #debug "Running tool: $toolFile"
         echo "[TOOL] ${function_name} ${function_arguments}"; echo
         result="$($toolFile)"
-        debug "Tool result: $result"
+        #debug "Tool result: $result"
         #echo " - Result: ${result}"; echo
       else
         debug "Unknown function: $function_name"
         continue
       fi
 
-      addMessage "assistant" "CALLING TOOL $function_name ${function_arguments}" # TODO - better to copy actual assistant response
+      addMessage "assistant" "CALL TOOL $function_name ${function_arguments}" # TODO - better to copy actual assistant response
       addMessage "tool" "$result" # Add tool response to messages
-      debug "tools: about to send to API: createRequest: $(createRequest)"
+
+      debug "calling $OLLAMA_API_URL"
       response=$(sendRequestToAPI)
       ((requestCount++))
       debug "tools response: $(echo "$response" | jq -r '.' 2>/dev/null)"
@@ -180,7 +193,7 @@ processUserCommand() {
       ;;
     /messages)
       # echo "$messages"
-      echo "{ \"messages\": [ ${messages} ] }" | jq -r . 2>/dev/null
+      echo "{ \"messages\": [ ${messages} ] }" | jq -r '.messages' 2>/dev/null
       ;;
     /clear)
       echo "Clearing message list"
@@ -231,12 +244,18 @@ chat() {
     return
   fi
 
+  if [ -z "$model" ]; then
+    echo "Error: no model loaded. Use '/list' to get available models.  Use '/load modelName' to load a model."
+    return
+  fi
+
   addMessage "user" "$prompt"
-  #debug "Calling $OLLAMA_API_URL"
-  debug "chat: about to send to API: createRequest: $(createRequest)"
+
+  debug "calling $OLLAMA_API_URL"
+  #debug "$(createRequest)"
   response=$(sendRequestToAPI)
   ((requestCount++))
-  #debug "1st response: $(echo "$response" | jq -r '.' 2>/dev/null)"
+  debug "response: $(echo "$response" | jq -r '.' 2>/dev/null)"
 
   processErrors
   if [[ $? = 1 ]]; then # If there was an error
@@ -244,37 +263,39 @@ chat() {
   fi
 
   processToolCall
-  #debug "2nd response: $(echo "$response" | jq -r '.' 2>/dev/null)"
+
   responseMessageContent=$(echo "$response" | jq -r '.message.content')
+  responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
+
   addMessage "assistant" "$responseMessageContent"
-  #debug "Assistant Response:\n"
+
+  if [ -n "$responseMessageThinking" ]; then
+    echo "💭 $responseMessageThinking 💭"; echo
+  fi
+
   echo "$responseMessageContent"
 }
 
 checkRequirements() {
   local requirements=(
-    "ollama --version"   # core
-    "basename --version" # core
-    "curl --version"     # core, getWebPageHtml
-    "jq --version"       # core, tools
-    "expect -v"          # core
-    "sed --version"      # core
-    "wc --version"       # core
-    "bc --version"       # core, calculator
-    "date --version"     # getDateTime
-    "man -P cat man"     # getManualPageForCommand
-    "lynx --version"     # getWebPageText
+    "ollama"   # core
+    "basename" # core
+    "curl"     # core, getWebPageHtml
+    "jq"       # core, tools
+    "expect"   # core
+    "sed"      # core
+    "wc"       # core
+    "bc"       # core, calculator
+    "date"     # getDateTime
+    "man"      # getManualPageForCommand
+    "lynx"     # getWebPageText
   )
-  local check=""
-  local cmd=""
   for requirement in "${requirements[@]}"; do
-    set -- $requirement
-    cmd="$1" # get first word
-    check=$($requirement 2> /dev/null)
-    if [ -z "$check" ]; then
-      echo "Requirement ERROR: $cmd not installed."
+    check=$(command -v $requirement 2> /dev/null)
+    if [ -z "$(command -v $requirement 2> /dev/null)" ]; then
+      echo "Requirement ERROR: Requirment not installed: $requirement"
     else 
-      debug "Requirement OK: $cmd installed"
+      debug "Requirement OK: $requirement"
     fi
   done
 }
@@ -283,7 +304,7 @@ checkRequirements
 
 parseCommandLine "$@"
 
-if [ -z "${model}" ]; then
+if [ -z "$model" ]; then
   echo; echo "No model is loaded. Available models:"; echo
   ollama list
   echo; echo "To load a model: /load modelName"
@@ -291,7 +312,7 @@ fi
 
 getTools
 echo; echo "Tools: ${availableTools[*]}";
-echo; echo "type /help for user commands.  Press Ctrl+C to exit."
+echo; echo "Use /help for commands.  Use /quit or Press Ctrl+C to exit."
 
 while true; do
     modelName="$model"
