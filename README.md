@@ -1,5 +1,7 @@
 # Ollama Bash Toolshed
 
+![Logo](docs/logo/logo.500x250.jpg)
+
 Bash scripts to chat with tool using models. Add new tools to your shed with ease. Runs on Ollama.
 
 ## Usage
