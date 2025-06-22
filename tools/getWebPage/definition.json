@@ -1,0 +1,21 @@
+{
+  "type": "function",
+  "function": {
+    "name": "getWebPage",
+    "description": "Get a web page from the internet",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL of the web page"
+        },
+        "format": {
+          "enum": ["text", "raw"],
+          "description": "Output format. 'text' for text-only version. 'raw' for HTML source.  Defaults to 'text'"
+        }
+      },
+      "required": ["url"]
+    }
+  }
+}

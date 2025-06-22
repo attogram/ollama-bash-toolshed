@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.18"
+VERSION="0.19"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -347,9 +347,9 @@ while true; do
     fi
     echo; echo -n "$PROMPT$NAME ($modelName) ($toolCount tools)"
     echo -n " [$requestCount requests]"
-    messagesWordCount=$(echo "$messages" | wc -w)
-    tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
-    echo -n " [$messageCount messages | ~$tokenEstimate tokens | $messagesWordCount words | ${#messages} chars]"
+    #messagesWordCount=$(echo "$messages" | wc -w)
+    #tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
+    echo -n " [$messageCount messages]" # | ~$tokenEstimate tokens | $messagesWordCount words | ${#messages} chars]"
     echo; echo -n ">>>${RESET} "
     read -r prompt
     echo

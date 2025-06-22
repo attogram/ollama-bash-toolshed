@@ -48,8 +48,7 @@ Ollama Bash Toolshed User Commands:
 * [calculator](tools/calculator) — Do math calculations
 * [getDateTime](tools/getDateTime) — Get the current date and time
 * [getManual](tools/getManual) - get man page for a command
-* [getWebPageHtml](tools/getWebPageHtml) — Get HTML of a web page
-* [getWebPageText](tools/getWebPageText) — Get the text of a web page
+* [getWebPage](tools/getWebPage) — Get a web page (text-version, or raw source)
 * [ollamaManager](tools/ollamaManager) — Get list of models, model info, ollama version
 
 ## Add a new tool
