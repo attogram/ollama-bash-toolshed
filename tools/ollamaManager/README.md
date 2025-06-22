@@ -13,7 +13,7 @@
 # Example model usage
 
 ```
-ollama-bash-toolshed (qwen3:0.6b) (6 tools) [0 requests] [0 messages | ~0 tokens | 0 words | 0 chars]
+ollama-bash-toolshed (qwen3:0.6b) (6 tools) [0 requests] [0 messages]
 >>> what version of ollama am I running?
 
 🤔💭 Okay, the user is asking about their Ollama version. Let me check the tools available. There's a function called ollamaManager that can get the version. The parameters require an action enum with options like models_list, model_info, or ollama_version. Since the user wants their current version, the action should be 'ollama_version'. The model parameter is optional here, so I don't need it. Just call the function with action set to ollama_version. No need to mention other functions since the user's query is specifically about their version. 💭🤔
@@ -26,7 +26,7 @@ ollama-bash-toolshed (qwen3:0.6b) (6 tools) [0 requests] [0 messages | ~0 tokens
 
 The current version of Ollama is 0.9.2.
 
-ollama-bash-toolshed (qwen3:0.6b) (6 tools) [2 requests] [4 messages | ~15.75 tokens | 21 words | 285 chars]
+ollama-bash-toolshed (qwen3:0.6b) (6 tools) [2 requests] [4 messages]
 >>> /messages
 
 [
