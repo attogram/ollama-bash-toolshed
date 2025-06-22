@@ -244,15 +244,15 @@ checkRequirements() {
   local requirements=(
     "ollama --version"   # core
     "basename --version" # core
-    "curl --version"     # core
-    "jq --version"       # core
+    "curl --version"     # core, getWebPageHtml
+    "jq --version"       # core, tools
     "expect -v"          # core
     "sed --version"      # core
     "wc --version"       # core
-    "bc --version"       # for calculator
-    "date --version"     # for getDateTime
-    "man -P cat man"     # for getManualPageForCommand
-    "lynx --version"     # for getWebPageText
+    "bc --version"       # core, calculator
+    "date --version"     # getDateTime
+    "man -P cat man"     # getManualPageForCommand
+    "lynx --version"     # getWebPageText
   )
   local check=""
   local cmd=""
