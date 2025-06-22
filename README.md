@@ -6,14 +6,22 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 
 ## Usage
 
-Chat with a tool usage model:
-```
-./ollama-bash-toolshed.sh "modelname"
-```
+* Run the toolshed:
+    ```
+    ./ollama-bash-toolshed.sh
+    ```
+  * This will start the toolshed with no model loaded
+  * use ```/list``` to get list of available models
+  * use ```/load``` modelName to load a model
 
-You MUST use a model with tools capabilities.
-* See the [ollama.com Tools models](https://ollama.com/search?c=tools) list.
-* See the [small models for tool-usage](https://github.com/attogram/small-models/tree/main#tool-usage) list.
+* Run the toolshed with a specific model:
+  ```
+  ./ollama-bash-toolshed.sh "modelname"
+  ```
+
+* You MUST use a model with tools capabilities.
+  * See the [ollama.com Tools models](https://ollama.com/search?c=tools) list.
+  * See the [small models for tool usage](https://github.com/attogram/small-models/tree/main#tool-usage) list.
  
 ## User commands
 
@@ -46,9 +54,9 @@ To add a new tool:
 
 - Give your tool a name.  Example: ```getWeather```
 - create a subdirectory in ```tools/``` directory. Example: ```tools/getWeather/```
-- create a JSON tool definition file. Example: ```tools/getWeather/getWeather.json```
-- create a bash script to run the tool. Example: ```tools/getWeather/getWeather.sh```
-- chmod your bash script. Example: ```chmod +x tools/getWeather/getWeather.sh```
+- create a JSON tool definition file. Example: ```tools/getWeather/definition.json```
+- create a bash script to run the tool. Example: ```tools/getWeather/run.sh```
+- chmod your bash script. Example: ```chmod +x tools/getWeather/run.sh```
 - your tool subdirectory and file names MUST be your tool name
 - run ```./ollama-bash-toolshed.sh "modelname"``` to chat using your new tool
 

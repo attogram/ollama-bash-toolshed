@@ -9,7 +9,7 @@ The name of the subdirectory is the name of the tool.
 
 ## Tool Definition
 
-Tools are defined with the ```./tools/toolName/toolName.json``` file.
+Tools are defined with the ```./tools/toolName/definition.json``` file.
 
 Example definition, a tool with no parameters:
 ```json
@@ -51,10 +51,10 @@ Example definition, a tool with a parameter:
 
 ## Tool Runner
 
-Tools are run via the ```./tools/toolName/toolName.sh``` file.
+Tools are run via the ```./tools/toolName/run.sh``` file.
 
-All ```toolName.sh``` files must be executable.
-- ```chmod +x toolName.sh```
+All ```run.sh``` files must be executable.
+- ```chmod +x run.sh```
 
 Tools receive parameters via a json block passed as the first argument:
 ```

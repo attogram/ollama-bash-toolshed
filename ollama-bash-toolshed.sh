@@ -9,7 +9,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.11"
+VERSION="0.12"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -39,7 +39,7 @@ getTools() {
     if [ -d "${toolDir}" ]; then
       local toolName
       toolName=$(basename "${toolDir}")
-      local jsonFile="${toolDir}${toolName}.json"
+      local jsonFile="${toolDir}definition.json"
       if [ -f "${jsonFile}" ]; then
         if [ -n "$toolDefinitions" ]; then
           toolDefinitions+=","
@@ -120,7 +120,7 @@ processToolCall() {
       #debug "Calling function: $function_name"
       local result
       if [[ " ${availableTools[*]} " =~ " ${function_name} " ]]; then # If tool is defined
-        toolFile="./tools/${function_name}/${function_name}.sh ${function_arguments}"
+        toolFile="./tools/${function_name}/run.sh ${function_arguments}"
         #debug "Running tool: $toolFile"
         echo "[TOOL] ${function_name} ${function_arguments}"; echo
         result="$($toolFile)"
@@ -199,7 +199,7 @@ processUserCommand() {
         parametersArray[1]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[1]}")
         local parametersJson="{\"${parametersArray[0]}\": \"${parametersArray[1]}\"}"
         echo "Parameters: $parametersJson"
-        local toolFileCall="./tools/${tool}/${tool}.sh ${parametersJson}"
+        local toolFileCall="./tools/${tool}/run.sh ${parametersJson}"
         echo; echo "$($toolFileCall)"
       else
         echo "Error: tool not in the shed"
@@ -272,11 +272,10 @@ checkRequirements
 
 parseCommandLine "$@"
 if [ -z "${model}" ]; then
-  echo "Error: no model. Usage: ./${0##*/} \"modelname\"";
+  echo; echo "Error: no model. Usage: ./${0##*/} \"modelname\"";
   echo; echo "Your local models:"
   ollama list
-  echo "type /load modelName to load a model"
-  #exit 1
+  echo; echo "type /load modelName to load a model"
 fi
 
 echo; echo "Model: $model"

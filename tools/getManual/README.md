@@ -4,6 +4,12 @@
 
 Get the manual page for a command.
 
+# User run
+
+Examples:
+* ```/run getManual command=wc```
+* ```/run getManual command=find```
+
 # Parameters
 
 - ```command``` 
