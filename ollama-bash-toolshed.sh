@@ -9,8 +9,10 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.12"
+VERSION="0.13"
 URL="https://github.com/attogram/ollama-bash-toolshed"
+
+TOOLS_DIRECTORY="./tools" # no slash at end
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
 
@@ -19,6 +21,8 @@ echo; echo "$NAME v$VERSION";
 model=""
 messages=""
 messageCount=0
+requestCount=0
+toolCount=0
 toolDefinitions=""
 availableTools=()
 
@@ -35,18 +39,19 @@ parseCommandLine() {
 
 getTools() {
   local toolDir
-  for toolDir in ./tools/*/; do
+  local toolName
+  for toolDir in $TOOLS_DIRECTORY/*/; do
     if [ -d "${toolDir}" ]; then
-      local toolName
       toolName=$(basename "${toolDir}")
-      local jsonFile="${toolDir}definition.json"
-      if [ -f "${jsonFile}" ]; then
+      local definitionFile="${toolDir}definition.json"
+      if [ -f "${definitionFile}" ]; then
         if [ -n "$toolDefinitions" ]; then
           toolDefinitions+=","
         fi
-        toolDefinitions+="$(cat "$jsonFile")"
+        toolDefinitions+="$(cat "$definitionFile")"
         availableTools+=("$toolName")
       fi
+      ((toolCount++))
     fi
   done
   #debug "toolDefinitions: ${toolDefinitions}"
@@ -81,6 +86,7 @@ EOF
 }
 
 sendRequestToAPI() {
+  ((requestCount++))
   echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
 }
 
@@ -120,7 +126,7 @@ processToolCall() {
       #debug "Calling function: $function_name"
       local result
       if [[ " ${availableTools[*]} " =~ " ${function_name} " ]]; then # If tool is defined
-        toolFile="./tools/${function_name}/run.sh ${function_arguments}"
+        toolFile="$TOOLS_DIRECTORY/${function_name}/run.sh ${function_arguments}"
         #debug "Running tool: $toolFile"
         echo "[TOOL] ${function_name} ${function_arguments}"; echo
         result="$($toolFile)"
@@ -185,8 +191,8 @@ processUserCommand() {
       ;;
     /tools)
       echo "Tools available: ${availableTools[*]}"
-      echo; echo "Tool definitions:"
-      echo "${toolDefinitions}"
+      #echo; echo "Tool definitions:"
+      #echo "${toolDefinitions}"
       ;;
     /run)
       local tool="${commandArray[1]}"
@@ -199,10 +205,10 @@ processUserCommand() {
         parametersArray[1]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[1]}")
         local parametersJson="{\"${parametersArray[0]}\": \"${parametersArray[1]}\"}"
         echo "Parameters: $parametersJson"
-        local toolFileCall="./tools/${tool}/run.sh ${parametersJson}"
+        local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
         echo; echo "$($toolFileCall)"
       else
-        echo "Error: tool not in the shed"
+        echo "Error: Tool not in the shed"
       fi
       ;;
     *)
@@ -271,23 +277,30 @@ checkRequirements() {
 checkRequirements
 
 parseCommandLine "$@"
+
 if [ -z "${model}" ]; then
-  echo; echo "Error: no model. Usage: ./${0##*/} \"modelname\"";
-  echo; echo "Your local models:"
+  echo; echo "Error: no model loaded.";
+  echo; echo "Available models:"
   ollama list
-  echo; echo "type /load modelName to load a model"
+  echo; echo "To load a model: /load modelName"
 fi
 
 echo; echo "Model: $model"
 getTools
 echo; echo "Tools: ${availableTools[*]}";
-echo; echo "type /help for user commands.  Press Ctrl+C to exit"
+echo; echo "type /help for user commands.  Press Ctrl+C to exit."
 
 while true; do
+    modelName="$model"
+    if [ -z "$modelName" ]; then
+      modelName="no model loaded"
+    fi
+    echo; echo -n "$NAME ($modelName) ($toolCount tools)"
+    echo -n " [$requestCount requests]"
     messagesWordCount=$(echo "$messages" | wc -w)
     tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
-    echo; echo "($model) [$messageCount messages] [~$tokenEstimate tokens] [$messagesWordCount words] [${#messages} characters]"
-    echo -n "Prompt: "
+    echo -n " [$messageCount messages | ~$tokenEstimate tokens | $messagesWordCount words | ${#messages} chars]"
+    echo; echo -n ">>> "
     read -r prompt
     echo
     chat "$prompt"
