@@ -7,8 +7,8 @@
 arguments="$@"
 action=$(echo "$arguments" | jq -r '.action')
 
-if [ -z "${action}" ]; then
-  echo "Error: Please specify a action";
+if [ "${action}" = "null"]; then
+  echo "Error: Please specify an action";
   exit
 fi
 

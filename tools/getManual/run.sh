@@ -5,8 +5,9 @@
 arguments="$@"
 command=$(echo "$arguments" | jq -r '.command')
 
-if [ -z "${command}" ]; then
+if [ "${command}" = "null" ]; then
   echo "Error: Please specify command";
-else
-  man -P cat "$command"
+  exit
 fi
+
+man -P cat "$command"
