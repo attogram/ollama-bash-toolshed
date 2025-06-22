@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.15"
+VERSION="0.16"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -26,6 +26,12 @@ requestCount=0
 toolCount=0
 toolDefinitions=""
 availableTools=()
+
+PROMPT_FG=$'\e[38;5;24m' # Prompt Foreground - blue
+PROMPT_BG=$'\e[48;5;0m' # Prompt Background - black
+THINKING_FG=$'\e[38;5;241m' # Thinking Foreground - grey
+THINKING_BG=$'\e[48;5;0m' # Thinking Background - black
+RESET=$'\e[0m' # reset terminal colors
 
 debug() {
   if [ "$DEBUG_MODE" != "1" ]; then
@@ -123,7 +129,7 @@ processToolCall() {
 
     local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
     if [ -n "$responseMessageThinking" ]; then
-      echo "💭 $responseMessageThinking 💭"; echo
+      echo "${THINKING_BG}${THINKING_FG}💭 $responseMessageThinking 💭${RESET}"; echo
     fi
 
     local responseMessageContent=$(echo "$response" | jq -r '.message.content')
@@ -270,7 +276,7 @@ chat() {
   addMessage "assistant" "$responseMessageContent"
 
   if [ -n "$responseMessageThinking" ]; then
-    echo "💭 $responseMessageThinking 💭"; echo
+    echo "${THINKING_BG}${THINKING_FG}💭 $responseMessageThinking 💭${RESET}"; echo
   fi
 
   echo "$responseMessageContent"
@@ -319,12 +325,12 @@ while true; do
     if [ -z "$modelName" ]; then
       modelName="no model loaded"
     fi
-    echo; echo -n "$NAME ($modelName) ($toolCount tools)"
+    echo; echo -n "${PROMPT_FG}${PROMPT_BG}${NAME} ($modelName) ($toolCount tools)"
     echo -n " [$requestCount requests]"
     messagesWordCount=$(echo "$messages" | wc -w)
     tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
     echo -n " [$messageCount messages | ~$tokenEstimate tokens | $messagesWordCount words | ${#messages} chars]"
-    echo; echo -n ">>> "
+    echo; echo -n ">>>${RESET} "
     read -r prompt
     echo
     chat "$prompt"
