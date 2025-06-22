@@ -248,6 +248,7 @@ checkRequirements() {
     "jq --version"       # core
     "expect -v"          # core
     "sed --version"      # core
+    "wc --version"       # core
     "bc --version"       # for calculator
     "date --version"     # for getDateTime
     "man -P cat man"     # for getManualPageForCommand
@@ -284,7 +285,7 @@ echo; echo "Tools: ${availableTools[*]}";
 echo; echo "type /help for user commands.  Press Ctrl+C to exit"
 
 while true; do
-    echo; echo "($model) [$messageCount messages] [${#messages} characters]"
+    echo; echo "($model) [$messageCount messages] [$(echo "$messages" | wc -w) words] [${#messages} characters]"
     echo -n "Prompt: "
     read -r prompt
     echo
