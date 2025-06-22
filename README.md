@@ -12,7 +12,7 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
     ```
   * This will start the toolshed with no model loaded
   * use ```/list``` to get list of available models
-  * use ```/load``` modelName to load a model
+  * use ```/load modelName``` to load a model
 
 * Run the toolshed with a specific model:
   ```
