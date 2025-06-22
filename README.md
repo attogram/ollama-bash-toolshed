@@ -37,6 +37,12 @@ Ollama Bash Toolshed User Commands:
 * ```/clear``` - clear the message cache
 * ```/quit``` or ```/bye``` - end the chat
 
+### Examples of running tools locally
+
+* ```/run calculator input="1 + 2"```
+* ```/run getManual command=wc```
+* ```/run getWebPageText url="https://ollama.com/search?c=tools"```
+
 ## Tools in the shed
 
 * [calculator](tools/calculator) — Do math calculations

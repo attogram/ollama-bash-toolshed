@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.16"
+VERSION="0.17"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -27,10 +27,8 @@ toolCount=0
 toolDefinitions=""
 availableTools=()
 
-PROMPT_FG=$'\e[38;5;24m' # Prompt Foreground - blue
-PROMPT_BG=$'\e[48;5;0m' # Prompt Background - black
-THINKING_FG=$'\e[38;5;241m' # Thinking Foreground - grey
-THINKING_BG=$'\e[48;5;0m' # Thinking Background - black
+PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
+THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # background black, foreground grey
 RESET=$'\e[0m' # reset terminal colors
 
 debug() {
@@ -126,10 +124,9 @@ processErrors() {
 processToolCall() {
   if echo "$response" | jq -e '.message.tool_calls' >/dev/null; then # Check if response contains tool_calls
 
-
     local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
     if [ -n "$responseMessageThinking" ]; then
-      echo "${THINKING_BG}${THINKING_FG}💭 $responseMessageThinking 💭${RESET}"; echo
+      echo "${THINKING}🤔💭 $responseMessageThinking 💭🤔${RESET}"; echo
     fi
 
     local responseMessageContent=$(echo "$response" | jq -r '.message.content')
@@ -168,6 +165,40 @@ processToolCall() {
   fi
 }
 
+userRunTool() {
+  local tool="$1"
+  local parameters="$2"
+  local paramNames=()
+  local paramValues=()
+
+  echo "Running tool: $tool with parameters: $parameters"
+
+  # for every param="value" (or param=value) pair
+  while [[ $parameters =~ ([^[:space:]=]+)=((\"[^\"]*\")|([^[:space:]]+)) ]]; do
+    key="${BASH_REMATCH[1]}"
+    val="${BASH_REMATCH[2]}"
+    val="${val%\"}" # remove quotes
+    val="${val#\"}"
+    paramNames+=("$key")
+    paramValues+=("$val")
+    parameters="${parameters#*"${BASH_REMATCH[0]}"}" # trim off processed part
+  done
+
+  local parametersJson=""
+  for i in "${!paramNames[@]}"; do
+    #echo "${paramNames[$i]}: ${paramValues[$i]}"
+    if [ -n "$parametersJson" ]; then
+      parametersJson+=","
+    fi
+    parametersJson+="\"${paramNames[$i]}\":\"${paramValues[$i]}\""
+  done
+  parametersJson="{$parametersJson}"
+  #echo "parametersJson: $parametersJson"
+
+  local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
+  echo; echo "$($toolFileCall)"
+}
+
 processUserCommand() {
   firstChar=${prompt:0:1}
   if [ "$firstChar" != "/" ]; then
@@ -176,19 +207,19 @@ processUserCommand() {
   IFS=' ' read -r -a commandArray <<< "$prompt"
   case ${commandArray[0]} in
     /help)
-      echo "Ollama Bash Toolshed User Commands:"
-      echo "  /list - get models installed"
-      echo "  /load <modelName> - load the model"
-      echo "  /show <modelName> - show info about model"
-      echo "  /tools - list tools available"
-      echo "  /run <toolName> <parameterName=parameterValue> - run a tool, with optional parameters"
-      echo "  /messages - list of current messages"
-      echo "  /clear - clear the message and model cache"
-      echo "  /quit or /bye - end the chat"
-      echo "  /help - list of commands"
+      echo "Commands:"
+      echo "  /list           - get models installed"
+      echo "  /load modelName - load the model"
+      echo "  /show modelName - show info about model"
+      echo "  /tools          - list tools available"
+      echo "  /run toolName param1=\"value\" param2=\"value\" - run a tool, with optional parameters"
+      echo "  /messages       - list of current messages"
+      echo "  /clear          - clear the message and model cache"
+      echo "  /quit or /bye   - end the chat"
+      echo "  /help           - list of commands"
       ;;
     /quit|/bye)
-      echo "Stopping the Ollama Bash Toolshed. Bye!"
+      echo "Closing the Ollama Bash Toolshed. Bye!"
       exit
       ;;
     /list)
@@ -198,14 +229,12 @@ processUserCommand() {
       ollama show "${commandArray[1]}"
       ;;
     /messages)
-      # echo "$messages"
       echo "{ \"messages\": [ ${messages} ] }" | jq -r '.messages' 2>/dev/null
       ;;
     /clear)
       echo "Clearing message list"
       messages=""
       messageCount=0
-      echo "Clearing model cache"
       clearModel
       ;;
     /load)
@@ -214,23 +243,14 @@ processUserCommand() {
       model="$newModel"
       ;;
     /tools)
-      echo "Tools available: ${availableTools[*]}"
+      echo "${availableTools[*]}"
       #echo; echo "Tool definitions:"
       #echo "${toolDefinitions}"
       ;;
     /run)
       local tool="${commandArray[1]}"
       if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
-        echo "Running tool: $tool"
-        local parameters="${commandArray[2]}"
-        IFS='=' read -r -a parametersArray <<< "$parameters"
-        #  strip quotes from start and end
-        parametersArray[0]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[0]}")
-        parametersArray[1]=$(sed -e 's/^"//' -e 's/"$//' <<<"${parametersArray[1]}")
-        local parametersJson="{\"${parametersArray[0]}\": \"${parametersArray[1]}\"}"
-        echo "Parameters: $parametersJson"
-        local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
-        echo; echo "$($toolFileCall)"
+        userRunTool "$tool" "${commandArray[*]:2}"
       else
         echo "Error: Tool not in the shed"
       fi
@@ -270,13 +290,13 @@ chat() {
 
   processToolCall
 
-  responseMessageContent=$(echo "$response" | jq -r '.message.content')
-  responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
+  local responseMessageContent=$(echo "$response" | jq -r '.message.content')
+  local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
 
   addMessage "assistant" "$responseMessageContent"
 
   if [ -n "$responseMessageThinking" ]; then
-    echo "${THINKING_BG}${THINKING_FG}💭 $responseMessageThinking 💭${RESET}"; echo
+    echo "${THINKING}🤔💭 $responseMessageThinking 💭🤔${RESET}"; echo
   fi
 
   echo "$responseMessageContent"
@@ -318,14 +338,14 @@ fi
 
 getTools
 echo; echo "Tools: ${availableTools[*]}";
-echo; echo "Use /help for commands.  Use /quit or Press Ctrl+C to exit."
+echo; echo "Use /help for commands. Use /quit or Press Ctrl+C to exit."
 
 while true; do
     modelName="$model"
     if [ -z "$modelName" ]; then
       modelName="no model loaded"
     fi
-    echo; echo -n "${PROMPT_FG}${PROMPT_BG}${NAME} ($modelName) ($toolCount tools)"
+    echo; echo -n "$PROMPT$NAME ($modelName) ($toolCount tools)"
     echo -n " [$requestCount requests]"
     messagesWordCount=$(echo "$messages" | wc -w)
     tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
