@@ -5,7 +5,7 @@
 arguments="$@"
 
 url=$(echo "$arguments" | jq -r '.url')
-if [ "${url}" == "null"]; then
+if [ "${url}" == "null" ]; then
   echo "Error: Please specify URL of the web page";
   exit
 fi
