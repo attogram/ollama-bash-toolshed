@@ -9,7 +9,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.10"
+VERSION="0.11"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 OLLAMA_API_URL="http://localhost:11434/api/chat"
 DEBUG_MODE="0"
@@ -285,7 +285,9 @@ echo; echo "Tools: ${availableTools[*]}";
 echo; echo "type /help for user commands.  Press Ctrl+C to exit"
 
 while true; do
-    echo; echo "($model) [$messageCount messages] [$(echo "$messages" | wc -w) words] [${#messages} characters]"
+    messagesWordCount=$(echo "$messages" | wc -w)
+    tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
+    echo; echo "($model) [$messageCount messages] [~$tokenEstimate tokens] [$messagesWordCount words] [${#messages} characters]"
     echo -n "Prompt: "
     read -r prompt
     echo
