@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.17"
+VERSION="0.18"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end

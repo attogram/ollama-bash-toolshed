@@ -2,12 +2,18 @@
 
 **ollamaManager** - A tool for the [Ollama Bash Toolshed](../../).
 
-IN DEV
+# Example running locally
+
+```/run ollamaManager action=ollama_version```
+
+```/run ollamaManager action=models_list```
+
+```/run ollamaManager action=model_info model=qwen3:0.6b```
 
 # Parameters
 
 - ```action``` (required)
-- ```model```
+- ```model``` (required for action=model_info)
 
 # Requirements
 

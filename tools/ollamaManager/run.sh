@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Ollama Bash Toolshed - Ollama Manager
+# Ollama Manager
+#
+# A tool for the Ollama Bash Toolshed
 
 arguments="$@"
 action=$(echo "$arguments" | jq -r '.action')
@@ -10,4 +12,18 @@ if [ -z "${action}" ]; then
   exit
 fi
 
-echo "IN DEV: Action: $action"
+case "$action" in
+  ollama_version)
+    ollama --version
+    ;;
+  models_list)
+    ollama list
+    ;;
+  model_info)
+    model=$(echo "$arguments" | jq -r '.model')
+    ollama show "$model"
+    ;;
+  *)
+    echo "Error: Unknown action"
+    ;;
+esac
