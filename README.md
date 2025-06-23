@@ -6,50 +6,74 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 
 ## Usage
 
-* Run the toolshed:
-    ```
-    ./ollama-bash-toolshed.sh
-    ```
+Run the toolshed:
+  ```
+  ./ollama-bash-toolshed.sh
+  ```
   * This will start the toolshed with no model loaded
-  * use ```/list``` to get list of available models
-  * use ```/load modelName``` to load a model
+    * use ```/list``` to get available models
+    * use ```/load modelName``` to load a model
 
-* Run the toolshed with a specific model:
+Run the toolshed with a specific model:
   ```
   ./ollama-bash-toolshed.sh "modelname"
   ```
 
-* You MUST use a model with tools capabilities.
+* For models with tools capabilities:
   * See the [ollama.com Tools models](https://ollama.com/search?c=tools) list.
   * See the [small models for tool usage](https://github.com/attogram/small-models/tree/main#tool-usage) list.
- 
-## User commands
-
-Ollama Bash Toolshed User Commands:
-
-* ```/help``` - list of commands
-* ```/list``` - view models installed
-* ```/load <modelName>``` - load the model
-* ```/show <modelName>``` - view info about model
-* ```/tools``` - list tools available
-* ```/run <toolName> parameterName=parameterValue``` - run a tool
-* ```/messages``` - list of current messages
-* ```/clear``` - clear the message cache
-* ```/quit``` or ```/bye``` - end the chat
-
-### Examples of running tools locally
-
-* ```/run calculator input="1 + 2"```
-* ```/run man command=wc```
-* ```/run webpage url="https://ollama.com/search?c=tools"```
 
 ## Tools in the shed
 
 * [calculator](tools/calculator) — Do math calculations
 * [datetime](tools/datetime) — Get the current date and time
 * [man](tools/man) - Get manual page for a command
-* [webpage](tools/webpage) — Get a web page (text-version, or raw source)
 * [ollama](tools/ollama) — Get model list, model info, ollama version
+* [webpage](tools/webpage) — Get a web page (text-version, or raw source)
+
+## User commands
+
+```
+Commands:
+  /list           - list of models installed
+  /load modelName - load model
+  /info modelName - info about model
+  /pull modelName - pull new model
+  /tools          - list tools available
+  /tools toolName - show tool definition
+  /run toolName param1="value" param2="value" - run a tool, with optional parameters
+  /messages       - list of current messages
+  /clear          - clear the message and model cache
+  /config         - view all configs (tools, think, verbose)
+  /config name    - view a config
+  /config name value - set a config to new value
+  /quit or /bye   - end the chat
+  /help           - list of all commands
+```
+
+### Configs
+
+* ```tools``` - [on/off] - use tools
+* ```think``` - [on/off] - split out thinking from message content
+* ```verbose``` - [on/off] - verbose debug messages
+
+To use a model without tools capability: /config tools off
+
+To use a model with thinking capability: /config think on
+
+### Run tools manually
+
+To run tools manually, use the ```/run``` command.
+
+To run a tool with no parameters: ```/run toolName```
+
+to run a tool with parameters: ```/run toolName param1="value" param2="value"``` ...
+
+Examples: 
+* ```/run calculator input="1 + 2"```
+* ```/run man command=wc```
+* ```/run webpage url="https://ollama.com/search?c=tools"```
+* ```/run webpage url="https://www.example.com" format=raw```
 
 ## Add a new tool
 
@@ -57,99 +81,166 @@ Read about the [tools setup](tools/README.md).
 
 To add a new tool:
 
-- Give your tool a name.  Example: ```getWeather```
-- create a subdirectory in ```tools/``` directory. Example: ```tools/getWeather/```
-- create a JSON tool definition file. Example: ```tools/getWeather/definition.json```
-- create a bash script to run the tool. Example: ```tools/getWeather/run.sh```
-- chmod your bash script. Example: ```chmod +x tools/getWeather/run.sh```
-- your tool subdirectory and file names MUST be your tool name
-- run ```./ollama-bash-toolshed.sh "modelname"``` to chat using your new tool
+- Give your tool a name.
+  - Example: ```weather```
+- create a subdirectory in ```tools/``` directory. The directory name MUST be your tool name.
+  - Example: ```tools/weather/```
+- create a JSON tool definition file.
+  - Example: ```tools/weather/definition.json```
+- create a bash script to run the tool. 
+  - Example: ```tools/weather/run.sh```
+- chmod your bash script. 
+  - Example: ```chmod +x tools/weather/run.sh```
+- re-run ```./ollama-bash-toolshed.sh``` to chat using your new tool.
 
 ## Example chat
 
 ```html
-% ./ollama-bash-toolshed.sh qwen3:8b
+% ./ollama-bash-toolshed.sh llama3-groq-tool-use:8b
 
-ollama-bash-toolshed v0.1
+ollama-bash-toolshed v0.22
 
-Model: qwen3:8b
-Available Tools: getBashVersion getDateTime getOllamaVersion getWebPage
-Press Ctrl+C to exit
+Tools: calculator datetime man ollama webpage
 
-Prompt: what time is it?
+Use /help for commands. Use /quit or Press Ctrl+C to exit.
 
-[TOOL] getDateTime {}
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [0 requests] [0 messages]
+>>> what tools can you use?
 
-<think>
-Okay, the user asked, "what time is it?" I called the getDateTime function, which returned "Fri Jun 20 21:44:58 CEST 2025". Now I need to present this information clearly. Let me check the format. The date and time are in a standard format, so I can just relay that. The user might want to know the current time, so maybe I should mention it's the current date and time. Let me make sure there's no time zone confusion. The CEST indicates Central European Summer Time, which is UTC+2. If the user is in a different time zone, they might need to adjust, but since they didn't specify, I'll just provide the time as is. Alright, the response should be straightforward.
-</think>
+I can use several tools including a calculator for math calculations, datetime to get the current date and time, man to fetch manual pages for commands, ollama to interact with the Ollama application, and webpage to retrieve web pages from the internet. Would you like to use any of these tools?
 
-The current date and time is **Fri Jun 20 21:44:58 CEST 2025**. Let me know if you need further assistance!
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [1 requests] [2 messages]
+>>> what day is it?
 
-Prompt: what version of bash and ollama are installed?
+I can help you find out! I will use the datetime tool to get the current date and time for you. Is there anything specific you would like to know about today's date?
 
-[TOOL] getBashVersion {}
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [2 requests] [4 messages]
+>>> yes, what day is it?
 
-[TOOL] getOllamaVersion {}
-
-<think>
-Okay, let's see. The user asked for the versions of Bash and Ollama installed.
-
-First, I called the getBashVersion tool. The response came back as "3.2.57(1)-release". That's the Bash version. Then, I called getOllamaVersion, which returned "ollama version is 0.9.2".
-
-So, I need to present both versions clearly. Let me check if the responses are correctly formatted. The Bash version seems standard, and the Ollama version is straightforward.
-
-I should mention both versions in a friendly manner. Maybe start with Bash first since that's what the user might expect. Make sure to format the Ollama version correctly, perhaps using bold or a code block if needed.
-
-Wait, the user might be checking for specific versions for compatibility or troubleshooting. Including both versions in a clear statement should address their query. Let me structure the response to be concise and informative.
-</think>
-
-The installed software versions are:
-- **Bash**: `3.2.57(1)-release`
-- **Ollama**: `0.9.2`
-
-Let me know if you need further details!
-
-Prompt: what projects are listed on https://attogram.github.io/ ?
-
-[TOOL] getWebPage {
-  "url": "https://attogram.github.io/"
+[TOOL] {
+"name": "datetime",
+"arguments": {}
 }
+[TOOL] result: 30 characters, 1 lines
+[TOOL] result: Tue Jun 24 00:01:43 CEST 2025
 
-<think>
-Okay, let me see. The user asked what projects are listed on https://attogram.github.io/. I called the getWebPage function with that URL, and the response is the HTML content of the page.
+According to the datetime tool, today is Tuesday, June 24, 2025. Is there anything else you would like to know or any other task I can assist with?
 
-Now I need to parse the HTML to extract the project names. Looking at the HTML, there are several <div class="project"> sections. Each project has a <div class="name"> which contains the project's name as a link.
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [4 requests] [7 messages]
+>>> what is 1234 * 5678
 
-I'll loop through each project div, find the name, and collect them. The names are linked, so I should extract the text inside the <a> tag. For example, the first project is "Just Refs" and so on.
+I can use the calculator tool to help with that! The calculation is 1234 * 5678. Would you like me to proceed with this calculation?
 
-I need to make sure I get all the project names correctly. Let me count how many there are. The HTML has multiple project entries, each with their own name. I'll list them all, ensuring no duplicates and correct spelling.
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [5 requests] [9 messages]
+>>> yes
 
-Once I have the list, I'll present it to the user in a clear, numbered format. Also, note that some projects have a demo or home link, but the user only asked for the project names, so I'll focus on that.
+[TOOL] {
+"name": "calculator",
+"arguments": {
+"input": "1234*5678"
+}
+}
+[TOOL] result: 8 characters, 1 lines
+[TOOL] result: 7006652
 
-Double-checking the HTML to ensure I didn't miss any projects. The last project is "Attogram on Github" which is also included. That's 12 projects in total.
+The result of the calculation 1234 * 5678 is 7,006,652. Do you have any other calculations or questions?
 
-Alright, compiling the list now.
-</think>
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [7 requests] [12 messages]
+>>> show me the text of the webpage example.com
 
-The website https://attogram.github.io/ lists the following projects:
+I can use the webpage tool to fetch the webpage for you. Would you like me to retrieve the HTML source or just the text content?
 
-1. **Just Refs** - Extracts reference links from Wikipedia pages
-2. **Eight Queens** - Web game based on the classic chess puzzle
-3. **Games Website Builder** - Tool to create customizable game websites
-4. **Currency Exchange Rates** - Currency data aggregator with financial APIs
-5. **Body Mass Info Table** - BMI calculator with health metrics
-6. **Shared Media Tagger** - Crowdsourced media rating system
-7. **Shared Media API** - MediaWiki API wrapper for Wikimedia Commons
-8. **Attogram Router** - PHP 7 routing framework
-9. **Clean Repo: Games** - Open-source game repository cleaner
-10. **Open Translation Engine (OTE)** - Collaborative translation dictionary
-11. **Randomosity Tester** - Tests randomness functions in PHP/SQLite
-12. **Attogram on Github** - Repository management service
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [8 requests] [14 messages]
+>>> yes
 
-Let me know if you'd like details about any specific project!
+[TOOL] {
+"name": "webpage",
+"arguments": {
+"format": "text",
+"url": "example.com"
+}
+}
+[TOOL] result: 261 characters, 11 lines
+[TOOL] result: Example Domain
 
-Prompt:
+I've retrieved the text content of the webpage example.com. Here it is: "Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission."
+
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [10 requests] [17 messages]
+>>> /messages
+
+[
+{
+"role": "user",
+"content": "what tools can you use?"
+},
+{
+"role": "assistant",
+"content": "I can use several tools including a calculator for math calculations, datetime to get the current date and time, man to fetch manual pages for commands, ollama to interact with the Ollama application, and webpage to retrieve web pages from the internet. Would you like to use any of these tools?"
+},
+{
+"role": "user",
+"content": "what day is it?"
+},
+{
+"role": "assistant",
+"content": "I can help you find out! I will use the datetime tool to get the current date and time for you. Is there anything specific you would like to know about today's date?"
+},
+{
+"role": "user",
+"content": "yes, what day is it?"
+},
+{
+"role": "tool",
+"content": "Tue Jun 24 00:01:43 CEST 2025"
+},
+{
+"role": "assistant",
+"content": "According to the datetime tool, today is Tuesday, June 24, 2025. Is there anything else you would like to know or any other task I can assist with?"
+},
+{
+"role": "user",
+"content": "what is 1234 * 5678"
+},
+{
+"role": "assistant",
+"content": "I can use the calculator tool to help with that! The calculation is 1234 * 5678. Would you like me to proceed with this calculation?"
+},
+{
+"role": "user",
+"content": "yes"
+},
+{
+"role": "tool",
+"content": "7006652"
+},
+{
+"role": "assistant",
+"content": "The result of the calculation 1234 * 5678 is 7,006,652. Do you have any other calculations or questions?"
+},
+{
+"role": "user",
+"content": "show me the text of the webpage example.com"
+},
+{
+"role": "assistant",
+"content": "I can use the webpage tool to fetch the webpage for you. Would you like me to retrieve the HTML source or just the text content?"
+},
+{
+"role": "user",
+"content": "yes"
+},
+{
+"role": "tool",
+"content": "Example Domain\n\n   This domain is for use in illustrative examples in documents. You may\n   use this domain in literature without prior coordination or asking for\n   permission.\n\n   [1]More information...\n\nReferences\n\n   1. https://www.iana.org/domains/example"
+},
+{
+"role": "assistant",
+"content": "I've retrieved the text content of the webpage example.com. Here it is: \"Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\""
+}
+]
+
+ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [10 requests] [17 messages]
+>>>
 ```
 
 ## Attogram Artificial Intelligence Projects
