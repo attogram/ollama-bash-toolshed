@@ -41,7 +41,7 @@ Ollama Bash Toolshed User Commands:
 
 * ```/run calculator input="1 + 2"```
 * ```/run getManual command=wc```
-* ```/run getWebPageText url="https://ollama.com/search?c=tools"```
+* ```/run getWebPage url="https://ollama.com/search?c=tools"```
 
 ## Tools in the shed
 

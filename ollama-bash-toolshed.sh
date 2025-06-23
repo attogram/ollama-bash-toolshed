@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.19"
+VERSION="0.20"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -22,20 +22,85 @@ echo; echo "$NAME v$VERSION";
 model=""
 messages=""
 messageCount=0
+request=""
 requestCount=0
+response=""
+availableTools=()
 toolCount=0
 toolDefinitions=""
-availableTools=()
 
-PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
-THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # background black, foreground grey
-RESET=$'\e[0m' # reset terminal colors
+configs=(
+  "tools:on"
+  "think:off"
+  "verbose:off"
+)
+
+setColorScheme() {
+  PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
+  THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # background black, foreground grey
+  RESET=$'\e[0m' # reset terminal colors
+}
 
 debug() {
-  if [ "$DEBUG_MODE" != "1" ]; then
-    return
+  if [ "$DEBUG_MODE" == "1" ]; then
+    echo -e "[DEBUG] $1"
   fi
-  echo -e "[DEBUG] $1"
+}
+
+debugJson() {
+  if [ "$DEBUG_MODE" == "1" ]; then
+    echo "$1" | jq -r '.' 2>/dev/null
+  fi
+}
+
+getConfig() {
+  local configName="$1"
+  for config in "${configs[@]}"; do
+    if [[ "${config%%:*}" == "$configName" ]]; then
+      echo "${config#*:}"
+      break
+    fi
+  done
+}
+
+setConfig() {
+  local configName="$1"
+  local configValue="$2"
+  local newConfigs=()
+  for config in "${configs[@]}"; do
+    name="${config%%:*}"
+    value="${config#*:}"
+    if [[ "$name" == "$configName" ]]; then
+      value=${commandArray[2]}
+      echo "$name: $value"
+    fi
+    # set var $nameConfig to $value
+    eval ${name}Config=\$value
+    newConfigs+=("$name:$value")
+  done
+  configs=("${newConfigs[@]}")
+  setConfigs
+}
+
+setConfigs() {
+  for config in "${configs[@]}"; do
+    name="${config%%:*}"
+    value="${config#*:}"
+    # set $nameConfig to $value
+    eval ${name}Config=\$value
+    case $name in
+      tools)
+        getTools
+        ;;
+      verbose)
+        if [[ "$value" == "on" ]]; then
+          DEBUG_MODE=1
+        else
+          DEBUG_MODE=0
+        fi
+        ;;
+    esac
+  done
 }
 
 parseCommandLine() {
@@ -43,12 +108,20 @@ parseCommandLine() {
 }
 
 getTools() {
+  availableTools=()
+  toolDefinitions=""
+  if [[ "$toolsConfig" != "on" ]]; then
+    toolCount=0
+    return
+  fi
+
   local toolDir
   local toolName
+  availableTools=()
   for toolDir in $TOOLS_DIRECTORY/*/; do
     if [ -d "${toolDir}" ]; then
       toolName=$(basename "${toolDir}")
-      local definitionFile="${toolDir}definition.json"
+      local definitionFile="${toolDir}/definition.json"
       if [ -f "${definitionFile}" ]; then
         if [ -n "$toolDefinitions" ]; then
           toolDefinitions+=","
@@ -59,8 +132,6 @@ getTools() {
       ((toolCount++))
     fi
   done
-  #debug "toolDefinitions: ${toolDefinitions}"
-  #debug "availableTools: ${availableTools[*]}"
 }
 
 safeJson() {
@@ -76,26 +147,38 @@ addMessage() {
   message=$(safeJson "$message")
   messages+="{\"role\":\"$role\",\"content\":$message}"
   ((messageCount++))
-  debug "addMessage # $messageCount: role: $role - content: $message"
+  debug "addMessage #$messageCount: role: $role - content: $message"
 }
 
 createRequest() {
-    cat <<EOF
-{
-  "model": "$model",
-  "messages": [ ${messages} ],
-  "stream": false,
-  "think": true,
-  "tools": [ ${toolDefinitions} ]
-}
-EOF
+    echo "{\"model\": \"$model\", \"messages\": [ ${messages} ], \"stream\": false"
+    if [ "$thinkConfig" == "on" ]; then
+      echo ", \"think\": true"
+    fi
+    if [ "$toolsConfig" == "on" ]; then
+      echo ", \"tools\": [ ${toolDefinitions} ]"
+    fi
+    echo "}"
 }
 
 sendRequestToAPI() {
   echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
 }
 
+sendRequest() {
+  debug "request:"
+  debugJson "$(createRequest)"
+  ((requestCount++))
+  debug "POST to $OLLAMA_API_URL"
+  response=$(sendRequestToAPI)
+  debug "response:"
+  debugJson "$response"
+}
+
 clearModel() {
+  if [ -z "$model" ]; then
+    return
+  fi
   echo "Clearing model session: $model"
   (
     expect \
@@ -113,54 +196,46 @@ clearModel() {
 }
 
 processErrors() {
-    if echo "$response" | jq -e '.error' >/dev/null; then # Check for errors
-      local error=$(echo "$response" | jq -r '.error')
-      echo "Error: $error"
-      return 1
-    fi
-    return 0 # no errors
+  if echo "$response" | jq -e '.error' >/dev/null; then # Check for errors
+    echo "$response" | jq -r '.error' 2>/dev/null
+    return 1
+  fi
+  return 0 # no errors
 }
 
 processToolCall() {
   if echo "$response" | jq -e '.message.tool_calls' >/dev/null; then # Check if response contains tool_calls
-
-    local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
-    if [ -n "$responseMessageThinking" ]; then
-      echo "${THINKING}🤔💭 $responseMessageThinking 💭🤔${RESET}"; echo
-    fi
-
-    local responseMessageContent=$(echo "$response" | jq -r '.message.content')
+    showThinking
+    local responseMessageContent=$(echo "$response" | jq -r '.message.content' 2>/dev/null)
     if [ -n "$responseMessageContent" ]; then
       echo "$responseMessageContent"
     fi
-
-    #debug "Tool calls detected"
-    local tool_calls=$(echo "$response" | jq -r '.message.tool_calls[]') # get all tool calls
+    local tool_calls=$(echo "$response" | jq -r '.message.tool_calls[]' 2>/dev/null) # get all tool calls
     while IFS= read -r tool_call; do # Process each tool call
-      local function_name=$(echo "$tool_call" | jq -r '.function.name')
-      local function_arguments=$(echo "$tool_call" | jq -r '.function.arguments')
-      #debug "Calling function: $function_name"
-      local result
+      local function=$(echo "$tool_call" | jq -r '.function' 2>/dev/null)
+      local function_name=$(echo "$tool_call" | jq -r '.function.name' 2>/dev/null)
+      local function_arguments=$(echo "$tool_call" | jq -r '.function.arguments' 2>/dev/null)
+      debug "processToolCall: Calling function: $function_name"
+      local toolResult
       if [[ " ${availableTools[*]} " =~ " ${function_name} " ]]; then # If tool is defined
         toolFile="$TOOLS_DIRECTORY/${function_name}/run.sh ${function_arguments}"
-        #debug "Running tool: $toolFile"
-        echo "[TOOL] ${function_name} ${function_arguments}"; echo
-        result="$($toolFile)"
-        #debug "Tool result: $result"
-        #echo " - Result: ${result}"; echo
+        debug "processToolCall: Running toolFile: $toolFile"
+        echo -n "[TOOL] "
+        echo "$function" | jq -r '.' 2>/dev/null
+        toolResult="$($toolFile)"
+        echo "[TOOL] result: $(echo "$toolResult" | wc -c | sed 's/ //g') characters, $(echo "$toolResult" | wc -l | sed 's/ //g') lines"
+        echo "[TOOL] result: $(echo "$toolResult" | head -1)"; echo
+        debug "processToolCall: Tool result: $toolResult"
       else
-        debug "Unknown function: $function_name"
+        debug "processToolCall: Unknown function: $function_name"
         continue
       fi
-
-      addMessage "assistant" "CALL TOOL $function_name ${function_arguments}" # TODO - better to copy actual assistant response
-      addMessage "tool" "$result" # Add tool response to messages
-
-      debug "calling $OLLAMA_API_URL"
-      response=$(sendRequestToAPI)
-      ((requestCount++))
-      debug "tools response: $(echo "$response" | jq -r '.' 2>/dev/null)"
-
+      #debug "processToolCall: addMessage assistant CALL TOOL"
+      #addMessage "assistant" "$function" # TODO - better to copy actual assistant response
+      debug "processToolCall: addMessage tool result..."
+      addMessage "tool" "$toolResult" # Add tool response to messages
+      debug "processToolCall: sendRequest..."
+      sendRequest
     done < <(echo "$tool_calls" | jq -c '.')
   fi
 }
@@ -208,18 +283,35 @@ processUserCommand() {
   case ${commandArray[0]} in
     /help)
       echo "Commands:"
-      echo "  /list           - get models installed"
-      echo "  /load modelName - load the model"
-      echo "  /show modelName - show info about model"
+      echo "  /list           - list of models installed"
+      echo "  /load modelName - load model"
+      echo "  /info modelName - info about model"
+      echo "  /pull modelName - pull new model"
       echo "  /tools          - list tools available"
+      echo "  /tools toolName - show tool definition"
       echo "  /run toolName param1=\"value\" param2=\"value\" - run a tool, with optional parameters"
       echo "  /messages       - list of current messages"
       echo "  /clear          - clear the message and model cache"
+      echo "  /config         - view all configs (tools, think, verbose)"
+      echo "  /config name    - view a config"
+      echo "  /config name value - set a config to new value"
       echo "  /quit or /bye   - end the chat"
-      echo "  /help           - list of commands"
+      echo "  /help           - list of all commands"
+      ;;
+    /config)
+      if [ -n "${commandArray[2]}" ]; then
+        setConfig "${commandArray[1]}" "${commandArray[2]}"
+      elif [ -n "${commandArray[1]}" ]; then
+        echo -n "${commandArray[1]}: "
+        getConfig "${commandArray[1]}"
+      else
+        for config in "${configs[@]}"; do
+          echo "${config%%:*}: ${config#*:}"
+        done
+      fi
       ;;
     /quit|/bye)
-      echo "Closing the Ollama Bash Toolshed. Bye!"
+      echo "Closing the Ollama Bash Toolshed. Bye!"; echo
       exit
       ;;
     /list)
@@ -228,8 +320,11 @@ processUserCommand() {
     /show)
       ollama show "${commandArray[1]}"
       ;;
+    /pull)
+      ollama pull "${commandArray[1]}"
+      ;;
     /messages)
-      echo "{ \"messages\": [ ${messages} ] }" | jq -r '.messages' 2>/dev/null
+      echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
       ;;
     /clear)
       echo "Clearing message list"
@@ -243,9 +338,11 @@ processUserCommand() {
       model="$newModel"
       ;;
     /tools)
-      echo "${availableTools[*]}"
-      #echo; echo "Tool definitions:"
-      #echo "${toolDefinitions}"
+      if [ -n "${commandArray[1]}" ]; then
+        cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
+      else
+        echo "${availableTools[*]}"
+      fi
       ;;
     /run)
       local tool="${commandArray[1]}"
@@ -262,43 +359,36 @@ processUserCommand() {
   return 0 # user command was processed
 }
 
+showThinking() {
+  if [[ "$thinkConfig" != "on" ]]; then
+    return
+  fi
+  local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking' 2>/dev/null)
+  if [ -n "$responseMessageThinking" ]; then
+    echo "${THINKING}🤔💭 $responseMessageThinking 💭🤔${RESET}"; echo
+  fi
+}
+
 chat() {
   local prompt="$1"
-
   processUserCommand
   if [[ $? = 0 ]]; then # If a user command was processed
     return
   fi
-
   if [ -z "$model" ]; then
-    echo "Error: no model loaded. Use '/list' to get available models.  Use '/load modelName' to load a model."
+    echo "chat error: no model loaded. Use '/list' to get available models.  Use '/load modelName' to load a model."
     return
   fi
-
   addMessage "user" "$prompt"
-
-  debug "calling $OLLAMA_API_URL"
-  #debug "$(createRequest)"
-  response=$(sendRequestToAPI)
-  ((requestCount++))
-  debug "response: $(echo "$response" | jq -r '.' 2>/dev/null)"
-
+  sendRequest
   processErrors
   if [[ $? = 1 ]]; then # If there was an error
     return
   fi
-
   processToolCall
-
-  local responseMessageContent=$(echo "$response" | jq -r '.message.content')
-  local responseMessageThinking=$(echo "$response" | jq -r '.message.thinking')
-
+  showThinking
+  responseMessageContent="$(echo "$response" | jq -r '.message.content' 2>/dev/null)"
   addMessage "assistant" "$responseMessageContent"
-
-  if [ -n "$responseMessageThinking" ]; then
-    echo "${THINKING}🤔💭 $responseMessageThinking 💭🤔${RESET}"; echo
-  fi
-
   echo "$responseMessageContent"
 }
 
@@ -310,6 +400,7 @@ checkRequirements() {
     "jq"       # core, tools
     "expect"   # core
     "sed"      # core
+    "head"     # core
     "wc"       # core
     "bc"       # core, calculator
     "date"     # getDateTime
@@ -326,30 +417,28 @@ checkRequirements() {
   done
 }
 
+setConfigs
+setColorScheme
 checkRequirements
-
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
-  echo; echo "No model is loaded. Available models:"; echo
-  ollama list
-  echo; echo "To load a model: /load modelName"
+  echo; echo "⚠️ No model loaded."
+  echo "To view available modules use: /list"
+  echo "To load a model use: /load modelName"
 fi
 
-getTools
-echo; echo "Tools: ${availableTools[*]}";
+if [ -n $string1 "$availableTools" ]; then
+  echo; echo "Tools: ${availableTools[*]}";
+fi
 echo; echo "Use /help for commands. Use /quit or Press Ctrl+C to exit."
 
 while true; do
-    modelName="$model"
-    if [ -z "$modelName" ]; then
-      modelName="no model loaded"
-    fi
-    echo; echo -n "$PROMPT$NAME ($modelName) ($toolCount tools)"
+    echo
+    echo -n "$PROMPT$NAME (${model:-no model})"
+    echo -n " ($toolCount tools)"
     echo -n " [$requestCount requests]"
-    #messagesWordCount=$(echo "$messages" | wc -w)
-    #tokenEstimate=$(echo "$messagesWordCount * 0.75" | bc)
-    echo -n " [$messageCount messages]" # | ~$tokenEstimate tokens | $messagesWordCount words | ${#messages} chars]"
+    echo -n " [$messageCount messages]"
     echo; echo -n ">>>${RESET} "
     read -r prompt
     echo
