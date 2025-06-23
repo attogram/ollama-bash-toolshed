@@ -1,6 +1,6 @@
-# Get Date Time
+# datetime
 
-**getDateTime** - A tool for the [Ollama Bash Toolshed](../../).
+**datetime** - A tool for the [Ollama Bash Toolshed](../../).
 
 Get the current date and time.
 

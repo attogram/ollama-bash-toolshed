@@ -1,7 +1,7 @@
 {
   "type": "function",
   "function": {
-    "name": "getWebPage",
+    "name": "webpage",
     "description": "Get a web page from the internet",
     "parameters": {
       "type": "object",

@@ -1,13 +1,13 @@
 {
   "type": "function",
   "function": {
-    "name": "ollamaManager",
+    "name": "ollama",
     "description": "interact with the Ollama application",
     "parameters": {
       "type": "object",
       "properties": {
         "action": {
-          "description": "Availabe actions: 'models_list' to list all models in ollama, 'model_info' to get info about a model, 'ollama_version' to get current version of ollama",
+          "description": "'models_list' to list all models in ollama, 'model_info' to get info about a model, 'ollama_version' to get current version of ollama",
           "type": "string",
           "enum": ["models_list", "model_info", "ollama_version"]
         },

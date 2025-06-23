@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Ollama Bash Toolshed - Get Web Page
+# webpage - Get a web page from the internet
+#
+# A tool for the Ollama Bash Toolshed
 
 arguments="$@"
 

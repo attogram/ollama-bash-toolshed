@@ -1,10 +1,10 @@
-# Get Web Page
+# webpage
 
-**getWebPage** - A tool for the [Ollama Bash Toolshed](../../).
+**webpage** - A tool for the [Ollama Bash Toolshed](../../).
 
 Get a web page from the internet.
 
-Default to getting text-only version.  Getting raw source is also possible.
+Defaults to getting the text-only version.  Getting raw source is also possible.
 
 # Local Usage example
 

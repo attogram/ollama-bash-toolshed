@@ -40,16 +40,16 @@ Ollama Bash Toolshed User Commands:
 ### Examples of running tools locally
 
 * ```/run calculator input="1 + 2"```
-* ```/run getManual command=wc```
-* ```/run getWebPage url="https://ollama.com/search?c=tools"```
+* ```/run man command=wc```
+* ```/run webpage url="https://ollama.com/search?c=tools"```
 
 ## Tools in the shed
 
 * [calculator](tools/calculator) — Do math calculations
-* [getDateTime](tools/getDateTime) — Get the current date and time
-* [getManual](tools/getManual) - get man page for a command
-* [getWebPage](tools/getWebPage) — Get a web page (text-version, or raw source)
-* [ollamaManager](tools/ollamaManager) — Get list of models, model info, ollama version
+* [datetime](tools/datetime) — Get the current date and time
+* [man](tools/man) - Get manual page for a command
+* [webpage](tools/webpage) — Get a web page (text-version, or raw source)
+* [ollama](tools/ollama) — Get model list, model info, ollama version
 
 ## Add a new tool
 

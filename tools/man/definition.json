@@ -1,7 +1,7 @@
 {
   "type": "function",
   "function": {
-    "name": "getManual",
+    "name": "man",
     "description": "Get the manual page for a command",
     "parameters": {
       "type": "object",

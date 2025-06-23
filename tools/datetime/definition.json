@@ -1,7 +1,7 @@
 {
   "type": "function",
   "function": {
-    "name": "getDateTime",
+    "name": "datetime",
     "description": "Get the current date and time",
     "parameters": {
       "type": "object",

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Ollama Manager
+# ollama
 #
 # A tool for the Ollama Bash Toolshed
 

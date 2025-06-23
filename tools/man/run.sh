@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Ollama Bash Toolshed - Get the manual page for a command
+# man - Get the manual page for a command
+#
+# A tool for the Ollama Bash Toolshed
 
 arguments="$@"
 command=$(echo "$arguments" | jq -r '.command')
