@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.23"
+VERSION="0.24"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -39,6 +39,7 @@ setColorScheme() {
   PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
   THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # background black, foreground grey
   RESET=$'\e[0m' # reset terminal colors
+  ERASE_LINE=$'\e[2K'$'\e[A'
 }
 
 debug() {
@@ -170,7 +171,9 @@ sendRequest() {
   debugJson "$(createRequest)"
   ((requestCount++))
   debug "POST to $OLLAMA_API_URL"
+  echo -n "⏳ Waiting for model response ..."
   response=$(sendRequestToAPI)
+  echo -e "$ERASE_LINE"
   debug "response:"
   debugJson "$response"
 }
@@ -433,18 +436,18 @@ parseCommandLine "$@"
 
 if [ -z "$model" ]; then
   echo; echo "⚠️ No model loaded."
-  echo "To view available modules use: /models"
-  echo "To load a model use: /model modelName"
+  echo "View available modules: /models"
+  echo "Load a model: /model modelName"
 fi
 
 if [ -n $string1 "$availableTools" ]; then
   echo; echo "Tools: ${availableTools[*]}";
 fi
-echo; echo "Use /help for commands. Use /quit or Press Ctrl+C to exit."
+echo; echo "/help for commands. /quit or Ctrl+C to exit."
 
 while true; do
     echo
-    echo -n "$PROMPT$NAME (${model:-no model})"
+    echo -n "${PROMPT}${NAME} (${model:-no model})"
     echo -n " ($toolCount tools)"
     echo -n " [$requestCount requests]"
     echo -n " [$messageCount messages]"
