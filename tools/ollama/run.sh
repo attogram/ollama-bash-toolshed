@@ -6,24 +6,49 @@
 
 arguments="$@"
 action=$(echo "$arguments" | jq -r '.action')
-
 if [ "${action}" = "null" ]; then
-  echo "Error: Please specify an action";
+  echo "ERROR: 'action' parameter missing or empty";
   exit
 fi
 
+getModel() {
+  model=$(echo "$arguments" | jq -r '.model')
+  if [[ "$model" == "null" ]]; then
+    echo "ERROR: 'model' parameter missing or empty"
+    exit
+  fi
+  echo "$model"
+}
+
+getMessage() {
+  message=$(echo "$arguments" | jq -r '.message')
+  if [[ "$message" == "null" ]]; then
+    echo "ERROR: 'message' parameter missing or empty"
+    exit
+  fi
+  echo "$message"
+}
+
 case "$action" in
-  ollama_version)
-    ollama --version
-    ;;
-  models_list)
+  list)
     ollama list
     ;;
-  model_info)
-    model=$(echo "$arguments" | jq -r '.model')
-    ollama show "$model"
+  ps)
+    ollama ps
+    ;;
+  run)
+    ollama run "$(getModel)" "$(getMessage)"
+    ;;
+  show)
+    ollama show "$(getModel)"
+    ;;
+  stop)
+    ollama stop "$(getModel)"
+    ;;
+  version)
+    ollama --version
     ;;
   *)
-    echo "Error: Unknown action"
+    echo "ERROR: Unknown action"
     ;;
 esac

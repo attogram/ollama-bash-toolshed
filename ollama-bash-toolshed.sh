@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.25"
+VERSION="0.26"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -31,23 +31,44 @@ toolCount=0
 toolDefinitions=""
 
 configs=(
-  "tools:on"
-  "think:off"
-  "verbose:off"
+  'tools:on'
+  'think:on'
+  'verbose:off'
 )
+
+getSystemPrompt() {
+  if [ -z "$systemPrompt" ]; then
+    systemPrompt="You are an AI assistant.
+You are running in the Ollama Bash Toolshed.
+You have access to these tools:
+  calculator - for performing any standard math calculation,
+  datetime - for getting the current date and time,
+  man - for reading command manuals,
+  ollama - for interacting with models,
+  webpage - for fetching web pages in various formats.
+Use these tools to assist the user with complex math, checking the time, understanding commands,
+exploring Ollama models, and accessing information from the internet.
+Base your response on data you get from using the tools, and/or your own knowledge.
+Your responses are rendered in a text terminal. You can use ANSI escape codes to color your response."
+  fi
+  echo "$systemPrompt"
+}
 
 getHelp() {
     cat << EOF
 Model Commands:
-  /models          - list of models installed
-  /model modelName - load model
-  /show modelName  - info about model
-  /pull modelName  - pull new model
+  /list            - List models
+  /ps              - List running models
+  /pull modelName  - Pull new model
+  /run modelName   - Run a model
+  /show            - Current model info
+  /show modelName  - Model info
+  /stop modelName  - Stop a running model
 
 Tool Commands:
   /tools           - list tools available
   /tool toolName   - show tool definition
-  /run toolName param1="value" param2="value" - run a tool, with optional parameters
+  /exec toolName param1="value" param2="value" - run a tool, with optional parameters
 
 System Commands:
   /multi             - enter multi-line prompt
@@ -138,8 +159,8 @@ parseCommandLine() {
 getTools() {
   availableTools=()
   toolDefinitions=""
+  toolCount=0
   if [[ "$toolsConfig" != "on" ]]; then
-    toolCount=0
     return
   fi
 
@@ -169,13 +190,22 @@ safeJson() {
 addMessage() {
   local role="$1"
   local message="$2"
+  local toolName="$3"
+  local toolCallId="$4"
+  newMessage="{\"role\":\"$role\""
+  if [ -n "$toolName" ]; then
+    newMessage+=",\"name\":\"$toolName\""
+  fi
+  if [ -n "$toolCallId" ]; then
+    newMessage+=",\"tool_call_id\":\"$toolCallId\""
+  fi
+  newMessage+=",\"content\":$(safeJson "$message")}"
   if [ -n "$messages" ]; then
     messages+=","
   fi
-  message=$(safeJson "$message")
-  messages+="{\"role\":\"$role\",\"content\":$message}"
+  messages+="$newMessage"
   ((messageCount++))
-  debug "addMessage #$messageCount: role: $role - content: $message"
+  debug "addMessage #$messageCount: role:$role"
 }
 
 createRequest() {
@@ -205,11 +235,16 @@ sendRequest() {
   debugJson "$response"
 }
 
-clearModel() {
+clear() {
+  echo "Clearing messages"
+  messages=""
+  messageCount=0
+  requestCount=0
+  addMessage "system" "$(getSystemPrompt)"
   if [ -z "$model" ]; then
     return
   fi
-  echo "Clearing model session: $model"
+  echo "Clearing model: $model"
   (
     expect \
     -c "spawn ollama run $model" \
@@ -250,11 +285,11 @@ processToolCall() {
       if [[ " ${availableTools[*]} " =~ " ${function_name} " ]]; then # If tool is defined
         toolFile="$TOOLS_DIRECTORY/${function_name}/run.sh ${function_arguments}"
         debug "processToolCall: Running toolFile: $toolFile"
-        echo -n "[TOOL] "
-        echo "$function" | jq -r '.' 2>/dev/null
+        echo -n "[TOOL] call: "
+        echo "$function" | jq -c '.' 2>/dev/null
         toolResult="$($toolFile)"
-        echo "[TOOL] result: $(echo "$toolResult" | wc -c | sed 's/ //g') characters, $(echo "$toolResult" | wc -l | sed 's/ //g') lines"
-        echo "[TOOL] result: $(echo "$toolResult" | head -1)"; echo
+        echo -n "[TOOL] result: $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines,"
+        echo " first line: $(echo "$toolResult" | head -1)"; echo
         debug "processToolCall: Tool result: $toolResult"
       else
         debug "processToolCall: Unknown function: $function_name"
@@ -263,9 +298,11 @@ processToolCall() {
       #debug "processToolCall: addMessage assistant CALL TOOL"
       #addMessage "assistant" "$function" # TODO - better to copy actual assistant response
       debug "processToolCall: addMessage tool result..."
-      addMessage "tool" "$toolResult" # Add tool response to messages
+      addMessage "tool" "$toolResult" "${function_name}" # Add tool response to messages
       debug "processToolCall: sendRequest..."
       sendRequest
+      #echo "DEBUG: tool response: "; echo "$response" | jq -r '.' 2>/dev/null
+      processToolCall
     done < <(echo "$tool_calls" | jq -c '.')
   fi
 }
@@ -315,10 +352,7 @@ processUserCommand() {
       getHelp
       ;;
     /clear)
-      echo "Clearing message list"
-      messages=""
-      messageCount=0
-      clearModel
+      clear
       ;;
     /config)
       if [ -n "${commandArray[2]}" ]; then
@@ -335,10 +369,10 @@ processUserCommand() {
     /messages)
       echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
       ;;
-    /models)
+    /list|/models)
       ollama list
       ;;
-    /model)
+    /run|/model)
       local newModel="${commandArray[1]}"
       echo "Loading model: $newModel"
       model="$newModel"
@@ -350,6 +384,9 @@ processUserCommand() {
       echo "---"
       chat "$multiLinePrompt"
       ;;
+    /ps)
+      ollama ps
+      ;;
     /pull)
       ollama pull "${commandArray[1]}"
       ;;
@@ -357,7 +394,7 @@ processUserCommand() {
       echo "Closing the Ollama Bash Toolshed. Bye!"; echo
       exit
       ;;
-    /run)
+    /exec)
       local tool="${commandArray[1]}"
       if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
         userRunTool "$tool" "${commandArray[*]:2}"
@@ -366,10 +403,17 @@ processUserCommand() {
       fi
       ;;
     /show)
-      ollama show "${commandArray[1]}"
+      if [ -z "${commandArray[1]}" ]; then
+        ollama show "$model"
+      else
+        ollama show "${commandArray[1]}"
+      fi
+      ;;
+    /stop)
+      ollama stop "${commandArray[1]}"
       ;;
     /system)
-      echo "$systemPrompt"
+      getSystemPrompt
       ;;
     /tool)
       cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
@@ -414,7 +458,7 @@ chat() {
   showThinking
   responseMessageContent="$(echo "$response" | jq -r '.message.content' 2>/dev/null)"
   addMessage "assistant" "$responseMessageContent"
-  echo "$responseMessageContent"
+  echo -e "$responseMessageContent"
 }
 
 checkRequirements() {
@@ -445,11 +489,7 @@ checkRequirements() {
 setConfigs
 setColorScheme
 checkRequirements
-
-systemPrompt="You are a helpful assistant.
-You have access to these tools: ${availableTools[*]}.
-Do not ask the user if you should use a tool, just use it right away."
-addMessage "system" "$systemPrompt"
+addMessage "system" "$(getSystemPrompt)"
 
 parseCommandLine "$@"
 

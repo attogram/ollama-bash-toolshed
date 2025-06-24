@@ -2,18 +2,22 @@
   "type": "function",
   "function": {
     "name": "ollama",
-    "description": "interact with the Ollama application",
+    "description": "Interact with the Ollama application",
     "parameters": {
       "type": "object",
       "properties": {
         "action": {
-          "description": "'models_list' to list all models in ollama, 'model_info' to get info about a model, 'ollama_version' to get current version of ollama",
+          "description": "'list' = List models\n'ps' = List running models\n'run' = Run a model\n'show' = Show information for a model\n'stop' = Stop a running model\n'version' = Get version of ollama",
           "type": "string",
-          "enum": ["models_list", "model_info", "ollama_version"]
+          "enum": ["list", "ps", "run", "show", "stop", "version"]
         },
         "model": {
           "type": "string",
-          "description": "The model name. Required for action 'model_info'"
+          "description": "Model name. Required for actions 'run', 'show', and 'stop'"
+        },
+        "message": {
+          "type": "string",
+          "description": "Message content. Required for action 'run'"
         }
       },
       "required": ["action"]
