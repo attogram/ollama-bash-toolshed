@@ -72,17 +72,17 @@ To use a model with thinking capability: /config think on
 
 ### Run tools manually
 
-To run tools manually, use the ```/run``` command.
+To run tools manually, use the ```/exec``` command.
 
-To run a tool with no parameters: ```/run toolName```
+To run a tool with no parameters: ```/exec toolName```
 
-to run a tool with parameters: ```/run toolName param1="value" param2="value"``` ...
+to run a tool with parameters: ```/exec toolName param1="value" param2="value"``` ...
 
 Examples: 
-* ```/run calculator input="1 + 2"```
-* ```/run man command=wc```
-* ```/run webpage url="https://ollama.com/search?c=tools"```
-* ```/run webpage url="https://www.example.com" format=raw```
+* ```/exec calculator input="1 + 2"```
+* ```/exec man command=wc```
+* ```/exec webpage url="https://ollama.com/search?c=tools"```
+* ```/exec webpage url="https://www.example.com" format=raw```
 
 ## Add a new tool
 
