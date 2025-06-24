@@ -102,6 +102,18 @@ To add a new tool:
   - Example: ```chmod +x tools/weather/run.sh```
 - re-run ```./ollama-bash-toolshed.sh``` to chat using your new tool.
 
+## Common errors
+
+Error: ```no model running```
+- Fix: Use ```/run modelName``` to load a model
+  - Use ```/list``` to get available models
+
+Error: ```registry.ollama.ai/library/modelName does not support tools```
+- Fix: ```/config tools off```
+
+Error: ```registry.ollama.ai/library/modelName does not support thinking```
+- Fix: ```/config think off```
+
 ## Example chat
 
 ```html
