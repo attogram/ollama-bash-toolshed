@@ -6,11 +6,11 @@
 #
 # Usage:
 #  ./ollama-bash-toolshed.sh
-#  ./ollama-bash-toolshed.sh modelname
+#  ./ollama-bash-toolshed.sh modelName
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.24"
+VERSION="0.25"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -19,6 +19,7 @@ DEBUG_MODE="0"
 
 echo; echo "$NAME v$VERSION";
 
+systemPrompt=""
 model=""
 messages=""
 messageCount=0
@@ -34,6 +35,32 @@ configs=(
   "think:off"
   "verbose:off"
 )
+
+getHelp() {
+    cat << EOF
+Model Commands:
+  /models          - list of models installed
+  /model modelName - load model
+  /show modelName  - info about model
+  /pull modelName  - pull new model
+
+Tool Commands:
+  /tools           - list tools available
+  /tool toolName   - show tool definition
+  /run toolName param1="value" param2="value" - run a tool, with optional parameters
+
+System Commands:
+  /multi             - enter multi-line prompt
+  /messages          - list of current messages
+  /system            - show system prompt
+  /clear             - clear the message and model cache
+  /config            - view all configs (tools, think, verbose)
+  /config name       - view a config
+  /config name value - set a config to new value
+  /quit or /bye      - end the chat
+  /help              - list of all commands
+EOF
+}
 
 setColorScheme() {
   PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
@@ -285,24 +312,7 @@ processUserCommand() {
   IFS=' ' read -r -a commandArray <<< "$prompt"
   case ${commandArray[0]} in
     /help)
-      echo "Model Commands:"
-      echo "  /models          - list of models installed"
-      echo "  /model modelName - load model"
-      echo "  /show modelName  - info about model"
-      echo "  /pull modelName  - pull new model"
-      echo; echo "Tool Commands:"
-      echo "  /tools           - list tools available"
-      echo "  /tool toolName   - show tool definition"
-      echo "  /run toolName param1=\"value\" param2=\"value\" - run a tool, with optional parameters"
-      echo; echo "System Commands:"
-      echo "  /multi           - enter multi-line prompt"
-      echo "  /messages        - list of current messages"
-      echo "  /clear           - clear the message and model cache"
-      echo "  /config          - view all configs (tools, think, verbose)"
-      echo "  /config name     - view a config"
-      echo "  /config name value - set a config to new value"
-      echo "  /quit or /bye    - end the chat"
-      echo "  /help            - list of all commands"
+      getHelp
       ;;
     /clear)
       echo "Clearing message list"
@@ -357,6 +367,9 @@ processUserCommand() {
       ;;
     /show)
       ollama show "${commandArray[1]}"
+      ;;
+    /system)
+      echo "$systemPrompt"
       ;;
     /tool)
       cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
@@ -432,6 +445,12 @@ checkRequirements() {
 setConfigs
 setColorScheme
 checkRequirements
+
+systemPrompt="You are a helpful assistant.
+You have access to these tools: ${availableTools[*]}.
+Do not ask the user if you should use a tool, just use it right away."
+addMessage "system" "$systemPrompt"
+
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
@@ -440,7 +459,7 @@ if [ -z "$model" ]; then
   echo "Load a model: /model modelName"
 fi
 
-if [ -n $string1 "$availableTools" ]; then
+if [ -n "$availableTools" ]; then
   echo; echo "Tools: ${availableTools[*]}";
 fi
 echo; echo "/help for commands. /quit or Ctrl+C to exit."
