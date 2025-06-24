@@ -34,21 +34,26 @@ Run the toolshed with a specific model:
 ## User commands
 
 ```
-Commands:
-  /list           - list of models installed
-  /load modelName - load model
-  /info modelName - info about model
-  /pull modelName - pull new model
-  /tools          - list tools available
-  /tools toolName - show tool definition
+Model Commands:
+  /models          - list of models installed
+  /model modelName - load model
+  /show modelName  - info about model
+  /pull modelName  - pull new model
+
+Tool Commands:
+  /tools           - list tools available
+  /tool toolName   - show tool definition
   /run toolName param1="value" param2="value" - run a tool, with optional parameters
-  /messages       - list of current messages
-  /clear          - clear the message and model cache
-  /config         - view all configs (tools, think, verbose)
-  /config name    - view a config
+
+System Commands:
+  /multi           - enter multi-line prompt
+  /messages        - list of current messages
+  /clear           - clear the message and model cache
+  /config          - view all configs (tools, think, verbose)
+  /config name     - view a config
   /config name value - set a config to new value
-  /quit or /bye   - end the chat
-  /help           - list of all commands
+  /quit or /bye    - end the chat
+  /help            - list of all commands
 ```
 
 ### Configs
