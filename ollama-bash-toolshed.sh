@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.22"
+VERSION="0.23"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -282,21 +282,30 @@ processUserCommand() {
   IFS=' ' read -r -a commandArray <<< "$prompt"
   case ${commandArray[0]} in
     /help)
-      echo "Commands:"
-      echo "  /list           - list of models installed"
-      echo "  /load modelName - load model"
-      echo "  /info modelName - info about model"
-      echo "  /pull modelName - pull new model"
-      echo "  /tools          - list tools available"
-      echo "  /tools toolName - show tool definition"
+      echo "Model Commands:"
+      echo "  /models          - list of models installed"
+      echo "  /model modelName - load model"
+      echo "  /show modelName  - info about model"
+      echo "  /pull modelName  - pull new model"
+      echo; echo "Tool Commands:"
+      echo "  /tools           - list tools available"
+      echo "  /tool toolName   - show tool definition"
       echo "  /run toolName param1=\"value\" param2=\"value\" - run a tool, with optional parameters"
-      echo "  /messages       - list of current messages"
-      echo "  /clear          - clear the message and model cache"
-      echo "  /config         - view all configs (tools, think, verbose)"
-      echo "  /config name    - view a config"
+      echo; echo "System Commands:"
+      echo "  /multi           - enter multi-line prompt"
+      echo "  /messages        - list of current messages"
+      echo "  /clear           - clear the message and model cache"
+      echo "  /config          - view all configs (tools, think, verbose)"
+      echo "  /config name     - view a config"
       echo "  /config name value - set a config to new value"
-      echo "  /quit or /bye   - end the chat"
-      echo "  /help           - list of all commands"
+      echo "  /quit or /bye    - end the chat"
+      echo "  /help            - list of all commands"
+      ;;
+    /clear)
+      echo "Clearing message list"
+      messages=""
+      messageCount=0
+      clearModel
       ;;
     /config)
       if [ -n "${commandArray[2]}" ]; then
@@ -310,39 +319,30 @@ processUserCommand() {
         done
       fi
       ;;
-    /quit|/bye)
-      echo "Closing the Ollama Bash Toolshed. Bye!"; echo
-      exit
-      ;;
-    /list)
-      ollama list
-      ;;
-    /show)
-      ollama show "${commandArray[1]}"
-      ;;
-    /pull)
-      ollama pull "${commandArray[1]}"
-      ;;
     /messages)
       echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
       ;;
-    /clear)
-      echo "Clearing message list"
-      messages=""
-      messageCount=0
-      clearModel
+    /models)
+      ollama list
       ;;
-    /load)
+    /model)
       local newModel="${commandArray[1]}"
       echo "Loading model: $newModel"
       model="$newModel"
       ;;
-    /tools)
-      if [ -n "${commandArray[1]}" ]; then
-        cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
-      else
-        echo "${availableTools[*]}"
-      fi
+    /multi)
+      echo "Multi line input mode. Press Ctrl+D on a new line when finished."
+      echo "---"
+      local multiLinePrompt=$(cat)
+      echo "---"
+      chat "$multiLinePrompt"
+      ;;
+    /pull)
+      ollama pull "${commandArray[1]}"
+      ;;
+    /quit|/bye)
+      echo "Closing the Ollama Bash Toolshed. Bye!"; echo
+      exit
       ;;
     /run)
       local tool="${commandArray[1]}"
@@ -352,8 +352,17 @@ processUserCommand() {
         echo "Error: Tool not in the shed"
       fi
       ;;
+    /show)
+      ollama show "${commandArray[1]}"
+      ;;
+    /tool)
+      cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
+      ;;
+    /tools)
+      echo "${availableTools[*]}"
+      ;;
     *)
-      echo "ERROR: Unknown command: ${commandArray[0]}"
+      echo "Unknown command: ${commandArray[0]}"
       ;;
   esac
   return 0 # user command was processed
@@ -376,7 +385,7 @@ chat() {
     return
   fi
   if [ -z "$model" ]; then
-    echo "chat error: no model loaded. Use '/list' to get available models.  Use '/load modelName' to load a model."
+    echo "chat error: no model loaded. Use '/models' to get available models.  Use '/model modelName' to load a model."
     return
   fi
   addMessage "user" "$prompt"
@@ -424,8 +433,8 @@ parseCommandLine "$@"
 
 if [ -z "$model" ]; then
   echo; echo "⚠️ No model loaded."
-  echo "To view available modules use: /list"
-  echo "To load a model use: /load modelName"
+  echo "To view available modules use: /models"
+  echo "To load a model use: /model modelName"
 fi
 
 if [ -n $string1 "$availableTools" ]; then
