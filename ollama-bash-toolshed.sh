@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.26"
+VERSION="0.27"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 TOOLS_DIRECTORY="./tools" # no slash at end
@@ -32,7 +32,7 @@ toolDefinitions=""
 
 configs=(
   'tools:on'
-  'think:on'
+  'think:off'
   'verbose:off'
 )
 
@@ -40,16 +40,46 @@ getSystemPrompt() {
   if [ -z "$systemPrompt" ]; then
     systemPrompt="You are an AI assistant.
 You are running in the Ollama Bash Toolshed.
-You have access to these tools:
-  calculator - for performing any standard math calculation,
-  datetime - for getting the current date and time,
-  man - for reading command manuals,
-  ollama - for interacting with models,
-  webpage - for fetching web pages in various formats.
-Use these tools to assist the user with complex math, checking the time, understanding commands,
-exploring Ollama models, and accessing information from the internet.
+
+You may call these tools:
+  - calculator - for performing any standard math calculation
+  - datetime - for getting the current date and time
+  - man - for reading command manuals
+  - ollama - for interacting with models running in the ollama application
+  - webpage - for fetching web pages in various formats
+
+Use these tools to assist the user.
+The tools can help you solve complex math, get the current time, understand commands,
+explore Ollama models, and access information from the internet.
+
+You may send multiple tool calls in your response.
+
+Always tell the user the results of your tool calls.
+
 Base your response on data you get from using the tools, and/or your own knowledge.
-Your responses are rendered in a text terminal. You can use ANSI escape codes to color your response."
+
+Your response is rendered in a text terminal.
+You may use ANSI escape codes to color your response.
+To change text foreground color:
+  - red - use \`\\033[31m\`
+  - green - use \`\\033[32m\`
+  - yellow - use \`\\033[33m\`
+  - blue - use \`\\033[34m\`
+  - magenta - use \`\\033[35m\`
+  - cyan - use \`\\033[36m\`
+  - black - \`\\033[30m\`
+  - white - \`\\033[37m\`
+To change text background color:
+  - red - use \`\\033[41m\`
+  - green - use \`\\033[42m\`
+  - yellow - use \`\\033[43m\`
+  - blue - use \`\\033[44m\`
+  - magenta - use \`\\033[45m\`
+  - cyan - use \`\\033[46m\`
+  - black - \`\\033[40m\`
+  - white - \`\\033[47m\`
+To reset text to default colors - \`\\033[0m\`
+"
   fi
   echo "$systemPrompt"
 }
@@ -348,34 +378,31 @@ processUserCommand() {
   fi
   IFS=' ' read -r -a commandArray <<< "$prompt"
   case ${commandArray[0]} in
-    /help)
-      getHelp
-      ;;
     /clear)
       clear
       ;;
-    /config)
+    /config|/configs)
       if [ -n "${commandArray[2]}" ]; then
         setConfig "${commandArray[1]}" "${commandArray[2]}"
-      elif [ -n "${commandArray[1]}" ]; then
+        continue
+      fi
+      if [ -n "${commandArray[1]}" ]; then
         echo -n "${commandArray[1]}: "
         getConfig "${commandArray[1]}"
-      else
-        for config in "${configs[@]}"; do
-          echo "${config%%:*}: ${config#*:}"
-        done
+        continue
       fi
+      for config in "${configs[@]}"; do
+        echo "${config%%:*}: ${config#*:}"
+      done
       ;;
-    /messages)
-      echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
+    /help)
+      getHelp
       ;;
     /list|/models)
       ollama list
       ;;
-    /run|/model)
-      local newModel="${commandArray[1]}"
-      echo "Loading model: $newModel"
-      model="$newModel"
+    /messages|/msgs)
+      echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
       ;;
     /multi)
       echo "Multi line input mode. Press Ctrl+D on a new line when finished."
@@ -388,35 +415,61 @@ processUserCommand() {
       ollama ps
       ;;
     /pull)
+      if [ -z "${commandArray[1]}" ]; then
+        echo "Error: no model specified"
+        continue
+      fi
       ollama pull "${commandArray[1]}"
       ;;
     /quit|/bye)
       echo "Closing the Ollama Bash Toolshed. Bye!"; echo
       exit
       ;;
+    /run|/load)
+      local newModel="${commandArray[1]}"
+      if [ -z "$newModel" ]; then
+        echo "Error: no model specified"
+        continue
+      fi
+      echo "Loading model: $newModel"
+      model="$newModel"
+      ;;
     /exec)
       local tool="${commandArray[1]}"
       if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
         userRunTool "$tool" "${commandArray[*]:2}"
-      else
-        echo "Error: Tool not in the shed"
+        continue
       fi
+      echo "Error: Tool not in the shed"
       ;;
     /show)
       if [ -z "${commandArray[1]}" ]; then
         ollama show "$model"
-      else
-        ollama show "${commandArray[1]}"
+        continue
       fi
+      ollama show "${commandArray[1]}"
       ;;
     /stop)
+      if [ -z "${commandArray[1]}" ]; then
+        echo "Error: no model specified"
+        continue
+      fi
       ollama stop "${commandArray[1]}"
       ;;
     /system)
       getSystemPrompt
       ;;
     /tool)
-      cat "$TOOLS_DIRECTORY/${commandArray[1]}/definition.json" | jq -r '.' 2>/dev/null
+      if [ -z "${commandArray[1]}" ]; then
+        echo "Error: no tool specified"
+        continue
+      fi
+      local definitionFile="$TOOLS_DIRECTORY/${commandArray[1]}/definition.json"
+      if ! [ -f "$definitionFile" ]; then
+        echo "Error: tool does not exist"
+        continue
+      fi
+      cat "$definitionFile" | jq -r '.' 2>/dev/null
       ;;
     /tools)
       echo "${availableTools[*]}"
@@ -445,7 +498,7 @@ chat() {
     return
   fi
   if [ -z "$model" ]; then
-    echo "chat error: no model loaded. Use '/models' to get available models.  Use '/model modelName' to load a model."
+    echo "Error: no model running.  Use '/run modelName' to load a model. Use '/list' to get available models."
     return
   fi
   addMessage "user" "$prompt"
