@@ -10,11 +10,11 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.30"
+VERSION="0.31"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
-OLLAMA_API_URL="http://localhost:11434/api/chat"
+OLLAMA_API_URL="http://localhost:11434" # no slash at end
 TOOLS_DIRECTORY="./tools" # no slash at end
 
 systemPrompt=""    # System Prompt
@@ -257,7 +257,7 @@ createRequest() {
 }
 
 sendRequestToAPI() {
-  echo "$(createRequest)" | curl -s -X POST "$OLLAMA_API_URL" -H 'Content-Type: application/json' -d @-
+  echo "$(createRequest)" | curl -s -X POST "${OLLAMA_API_URL}/api/chat" -H 'Content-Type: application/json' -d @-
 }
 
 sendRequest() {
