@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.28"
+VERSION="0.29"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -140,6 +140,32 @@ debugJson() {
   fi
 }
 
+getTools() {
+  availableTools=()
+  toolDefinitions=""
+  toolCount=0
+  if [[ "$toolsConfig" != "on" ]]; then
+    return
+  fi
+  local toolDir
+  local toolName
+  availableTools=()
+  for toolDir in $TOOLS_DIRECTORY/*/; do
+    if [ -d "${toolDir}" ]; then
+      toolName=$(basename "${toolDir}")
+      local definitionFile="${toolDir}/definition.json"
+      if [ -f "${definitionFile}" ]; then
+        if [ -n "$toolDefinitions" ]; then
+          toolDefinitions+=","
+        fi
+        toolDefinitions+="$(cat "$definitionFile")"
+        availableTools+=("$toolName")
+      fi
+      ((toolCount++))
+    fi
+  done
+}
+
 getConfig() {
   local configName="$1"
   for config in "${configs[@]}"; do
@@ -148,25 +174,6 @@ getConfig() {
       break
     fi
   done
-}
-
-setConfig() {
-  local configName="$1"
-  local configValue="$2"
-  local newConfigs=()
-  for config in "${configs[@]}"; do
-    name="${config%%:*}"
-    value="${config#*:}"
-    if [[ "$name" == "$configName" ]]; then
-      value=${commandArray[2]}
-      echo "$name: $value"
-    fi
-    # set var $nameConfig to $value
-    eval ${name}Config=\$value
-    newConfigs+=("$name:$value")
-  done
-  configs=("${newConfigs[@]}")
-  setConfigs
 }
 
 setConfigs() {
@@ -191,35 +198,27 @@ setConfigs() {
   done
 }
 
-parseCommandLine() {
-  model="$1"
+setConfig() {
+  local configName="$1"
+  local configValue="$2"
+  local newConfigs=()
+  for config in "${configs[@]}"; do
+    name="${config%%:*}"
+    value="${config#*:}"
+    if [[ "$name" == "$configName" ]]; then
+      value=${commandArray[2]}
+      echo "$name: $value"
+    fi
+    # set var $nameConfig to $value
+    eval ${name}Config=\$value
+    newConfigs+=("$name:$value")
+  done
+  configs=("${newConfigs[@]}")
+  setConfigs
 }
 
-getTools() {
-  availableTools=()
-  toolDefinitions=""
-  toolCount=0
-  if [[ "$toolsConfig" != "on" ]]; then
-    return
-  fi
-
-  local toolDir
-  local toolName
-  availableTools=()
-  for toolDir in $TOOLS_DIRECTORY/*/; do
-    if [ -d "${toolDir}" ]; then
-      toolName=$(basename "${toolDir}")
-      local definitionFile="${toolDir}/definition.json"
-      if [ -f "${definitionFile}" ]; then
-        if [ -n "$toolDefinitions" ]; then
-          toolDefinitions+=","
-        fi
-        toolDefinitions+="$(cat "$definitionFile")"
-        availableTools+=("$toolName")
-      fi
-      ((toolCount++))
-    fi
-  done
+parseCommandLine() {
+  model="$1"
 }
 
 safeJson() {
