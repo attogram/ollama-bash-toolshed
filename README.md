@@ -25,11 +25,11 @@ Run the toolshed with a specific model:
 
 ## Tools in the shed
 
-* [calculator](tools/calculator) — Do math calculations
+* [calculator](tools/calculator) — Perform any standard math calculation (using bc input format)
 * [datetime](tools/datetime) — Get the current date and time
-* [man](tools/man) - Get manual page for a command
-* [ollama](tools/ollama) — Get model list, model info, ollama version
-* [webpage](tools/webpage) — Get a web page (text-version, or raw source)
+* [man](tools/man) - Read command manuals
+* [ollama](tools/ollama) — Interact with the Ollama application (list, ps, run, show, stop, version)
+* [webpage](tools/webpage) — Get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' for HTML source)
 
 ## User commands
 
@@ -45,6 +45,7 @@ Model Commands:
 
 Tool Commands:
   /tools           - list tools available
+  /instructions    - list instructions for all tools
   /tool toolName   - show tool definition
   /exec toolName param1="value" param2="value" - run a tool, with optional parameters
 
@@ -96,11 +97,13 @@ To add a new tool:
   - Example: ```tools/weather/```
 - create a JSON tool definition file.
   - Example: ```tools/weather/definition.json```
+- create a tool instructions file
+  - Example: ```tools/weather/instructions.txt```
 - create a bash script to run the tool. 
   - Example: ```tools/weather/run.sh```
 - chmod your bash script. 
   - Example: ```chmod +x tools/weather/run.sh```
-- re-run ```./ollama-bash-toolshed.sh``` to chat using your new tool.
+- re-run ```./ollama-bash-toolshed.sh``` to use your new tool.
 
 ## Common errors
 
