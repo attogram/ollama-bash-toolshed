@@ -10,79 +10,29 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.27"
+VERSION="0.28"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
-TOOLS_DIRECTORY="./tools" # no slash at end
+DEBUG_MODE="0" # change with: /config verbose [on|off]
 OLLAMA_API_URL="http://localhost:11434/api/chat"
-DEBUG_MODE="0"
+TOOLS_DIRECTORY="./tools" # no slash at end
 
-echo; echo "$NAME v$VERSION";
-
-systemPrompt=""
-model=""
-messages=""
-messageCount=0
-request=""
-requestCount=0
-response=""
-availableTools=()
-toolCount=0
-toolDefinitions=""
+systemPrompt=""    # System Prompt
+model=""           # current model
+messages=""        # json string of all messages
+messageCount=0     # number of messages
+request=""         # json string with the latest request to the model
+requestCount=0     # number of requests
+response=""        # json string with the latest response from the model
+availableTools=()  # array of available tools in the shed
+toolCount=0        # number of tools in the shed
+toolDefinitions="" # json string with all tool definitions
 
 configs=(
-  'tools:on'
-  'think:off'
-  'verbose:off'
+  'tools:on'    # /config tools [on|off]
+  'think:off'   # /config think [on|off]
+  'verbose:off' # /config verbose [on|off]
 )
-
-getSystemPrompt() {
-  if [ -z "$systemPrompt" ]; then
-    systemPrompt="You are an AI assistant.
-You are running in the Ollama Bash Toolshed.
-
-You may call these tools:
-  - calculator - for performing any standard math calculation
-  - datetime - for getting the current date and time
-  - man - for reading command manuals
-  - ollama - for interacting with models running in the ollama application
-  - webpage - for fetching web pages in various formats
-
-Use these tools to assist the user.
-The tools can help you solve complex math, get the current time, understand commands,
-explore Ollama models, and access information from the internet.
-
-You may send multiple tool calls in your response.
-
-Always tell the user the results of your tool calls.
-
-Base your response on data you get from using the tools, and/or your own knowledge.
-
-Your response is rendered in a text terminal.
-You may use ANSI escape codes to color your response.
-To change text foreground color:
-  - red - use \`\\033[31m\`
-  - green - use \`\\033[32m\`
-  - yellow - use \`\\033[33m\`
-  - blue - use \`\\033[34m\`
-  - magenta - use \`\\033[35m\`
-  - cyan - use \`\\033[36m\`
-  - black - \`\\033[30m\`
-  - white - \`\\033[37m\`
-To change text background color:
-  - red - use \`\\033[41m\`
-  - green - use \`\\033[42m\`
-  - yellow - use \`\\033[43m\`
-  - blue - use \`\\033[44m\`
-  - magenta - use \`\\033[45m\`
-  - cyan - use \`\\033[46m\`
-  - black - \`\\033[40m\`
-  - white - \`\\033[47m\`
-To reset text to default colors - \`\\033[0m\`
-"
-  fi
-  echo "$systemPrompt"
-}
 
 getHelp() {
     cat << EOF
@@ -111,6 +61,64 @@ System Commands:
   /quit or /bye      - end the chat
   /help              - list of all commands
 EOF
+}
+
+getSystemPromptIdentity() {
+  echo "You are an AI assistant.
+- You are inside the Ollama Bash Toolshed.
+- You are running on the Ollama application.
+"
+}
+
+getSystemPromptTools() {
+  echo "You have access to these tools:
+- calculator - perform any standard math calculation (using bc input format)
+- datetime   - get the current date and time
+- man        - read command manuals
+- ollama     - interact with the Ollama application (list, ps, run, show, stop, version)
+- webpage    - get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' to get HTML source)
+
+Use these tools to assist the user.
+- The tools can help you access information from the internet, solve complex math, get the current time,
+  understand commands and explore Ollama models.
+- You may send multiple tool calls in your response.
+- Always tell the user the results of your tool calls.
+- Base your response on data you get from using the tools, and/or your own knowledge.
+"
+}
+
+getSystemPromptTerminal() {
+  echo "Your response is rendered in a text terminal.
+- You may use ANSI escape codes to color your response.
+- COLOR    FOREGROUND      BACKGROUND
+  red      \`\\033[31m\`   \`\\033[41m\`
+  green    \`\\033[32m\`   \`\\033[42m\`
+  yellow   \`\\033[33m\`   \`\\033[43m\`
+  blue     \`\\033[34m\`   \`\\033[44m\`
+  magenta  \`\\033[35m\`   \`\\033[45m\`
+  cyan     \`\\033[36m\`   \`\\033[46m\`
+  black    \`\\033[30m\`   \`\\033[40m\`
+  white    \`\\033[37m\`   \`\\033[47m\`
+- To reset text to default colors: \`\\033[0m\`
+"
+}
+
+getSystemPromptUserCommands() {
+  echo "You can assist with commands the user may use inside Ollama Bash Toolshed.
+- Only the user may use these commands.
+- Command list:
+
+$(getHelp)
+"
+}
+
+getSystemPrompt() {
+  getSystemPromptIdentity
+  if [[ "$toolsConfig" == "on" ]]; then
+    getSystemPromptTools
+  fi
+  getSystemPromptTerminal
+  getSystemPromptUserCommands
 }
 
 setColorScheme() {
@@ -170,6 +178,7 @@ setConfigs() {
     case $name in
       tools)
         getTools
+        # TODO - redo systemPrompt with new tool setting
         ;;
       verbose)
         if [[ "$value" == "on" ]]; then
@@ -325,8 +334,13 @@ processToolCall() {
         debug "processToolCall: Unknown function: $function_name"
         continue
       fi
-      #debug "processToolCall: addMessage assistant CALL TOOL"
-      #addMessage "assistant" "$function" # TODO - better to copy actual assistant response
+
+      # TODO - add assistant tool request to messages
+      # - addMessageFromAssistant
+      #   - echo back the "tool_calls" json block the model sent
+      # - addMessageFromTool
+      #   - handle ids/index sent, add tool_call_id to tool response messages
+
       debug "processToolCall: addMessage tool result..."
       addMessage "tool" "$toolResult" "${function_name}" # Add tool response to messages
       debug "processToolCall: sendRequest..."
@@ -538,6 +552,8 @@ checkRequirements() {
     fi
   done
 }
+
+echo; echo "$NAME v$VERSION";
 
 setConfigs
 setColorScheme
