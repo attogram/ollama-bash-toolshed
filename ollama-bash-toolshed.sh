@@ -10,7 +10,7 @@
 #
 
 NAME="ollama-bash-toolshed"
-VERSION="0.29"
+VERSION="0.30"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -81,7 +81,6 @@ getSystemPromptTools() {
 Use these tools to assist the user.
 - The tools can help you access information from the internet, solve complex math, get the current time,
   understand commands and explore Ollama models.
-- You may send multiple tool calls in your response.
 - Always tell the user the results of your tool calls.
 - Base your response on data you get from using the tools, and/or your own knowledge.
 "
@@ -394,7 +393,7 @@ processUserCommand() {
     /clear)
       clear
       ;;
-    /config|/configs)
+    /config|/configs|/set)
       if [ -n "${commandArray[2]}" ]; then
         setConfig "${commandArray[1]}" "${commandArray[2]}"
         continue
