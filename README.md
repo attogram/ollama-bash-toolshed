@@ -25,11 +25,11 @@ Run the toolshed with a specific model:
 
 ## Tools in the shed
 
-* [calculator](tools/calculator) — Perform any standard math calculation (using bc input format)
-* [datetime](tools/datetime) — Get the current date and time
+* [calculator](tools/calculator) - Perform any standard math calculation (using bc input format)
+* [datetime](tools/datetime) - Get the current date and time
 * [man](tools/man) - Read command manuals
-* [ollama](tools/ollama) — Interact with the Ollama application (list, ps, run, show, stop, version)
-* [webpage](tools/webpage) — Get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' for HTML source)
+* [ollama](tools/ollama) - Interact with the Ollama application (list, ps, run, show, stop, version)
+* [webpage](tools/webpage) - Get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' for HTML source)
 
 ## User commands
 
