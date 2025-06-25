@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.32"
+VERSION="0.33"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -232,13 +232,9 @@ addMessage() {
   local role="$1"
   local message="$2"
   local toolName="$3"
-  local toolCallId="$4"
   newMessage="{\"role\":\"$role\""
   if [ -n "$toolName" ]; then
     newMessage+=",\"name\":\"$toolName\""
-  fi
-  if [ -n "$toolCallId" ]; then
-    newMessage+=",\"tool_call_id\":\"$toolCallId\""
   fi
   newMessage+=",\"content\":$(safeJson "$message")}"
   if [ -n "$messages" ]; then
@@ -247,6 +243,17 @@ addMessage() {
   messages+="$newMessage"
   ((messageCount++))
   debug "addMessage #$messageCount: role:$role"
+}
+
+addMessageAssistantToolCall() {
+  local response="$1"
+  local tool_calls="$(echo "$response" | jq -r '.message.tool_calls')"
+  local message="{\"role\":\"assistant\", \"tool_calls\": $tool_calls}"
+  if [ -n "$messages" ]; then
+    messages+=","
+  fi
+  messages+="$message"
+  ((messageCount++))
 }
 
 createRequest() {
@@ -337,13 +344,9 @@ processToolCall() {
         continue
       fi
 
-      # TODO - add assistant tool request to messages
-      # - addMessageFromAssistant
-      #   - echo back the "tool_calls" json block the model sent
-      # - addMessageFromTool
-      #   - handle ids/index sent, add tool_call_id to tool response messages
+      addMessageAssistantToolCall "$response"
 
-      debug "processToolCall: addMessage tool result..."
+      #debug "processToolCall: addMessage tool result..."
       addMessage "tool" "$toolResult" "${function_name}" # Add tool response to messages
       debug "processToolCall: sendRequest..."
       sendRequest
@@ -421,7 +424,7 @@ processUserCommand() {
       ollama list
       ;;
     /messages|/msgs)
-      echo "{\"messages\":[${messages}]}" | jq -r '.messages' 2>/dev/null
+      echo "{\"messages\":[${messages}]}" | jq -r '.messages' # 2>/dev/null
       ;;
     /multi)
       echo "Multi line input mode. Press Ctrl+D on a new line when finished."
