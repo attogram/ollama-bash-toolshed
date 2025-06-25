@@ -6,6 +6,7 @@ Each subdirectory is a tool.
 
 The name of the subdirectory is the name of the tool.
 
+Each tool has files: ```definition.json```, ```run.sh```, and ```instructions.txt```
 
 ## Tool Definition
 
@@ -49,6 +50,13 @@ Example definition, a tool with a parameter:
 
 ```
 
+## Tool Instructions
+
+Tool instructions are in the ```./tools/toolName/instructions.txt``` file.
+
+- A list of all tool instructions is inserted in the System Prompt.
+- Use ```/instructions``` to view the current instruction list.
+
 ## Tool Runner
 
 Tools are run via the ```./tools/toolName/run.sh``` file.
@@ -63,7 +71,7 @@ Tools receive parameters via a json block passed as the first argument:
 }
 ```
 
-In bash, to parse the parameters in the json block:
+In bash, to parse the parameters in the JSON block:
 ```bash
 # get the command line arguments
 arguments="$@" 

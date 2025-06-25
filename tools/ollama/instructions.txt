@@ -1,0 +1,1 @@
+'ollama' - Interact with the Ollama application (list, ps, run, show, stop, version)

@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "calculator",
-    "description": "Do math calculations with the unix bc command. Supports all standard bc input. Examples: 1+2, 4-3, 5*6, 8/4",
+    "description": "Perform any standard math calculation (using bc input format)",
     "parameters": {
       "type": "object",
       "properties": {

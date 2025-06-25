@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "man",
-    "description": "Get the manual page for a command",
+    "description": "Read command manuals",
     "parameters": {
       "type": "object",
       "properties": {

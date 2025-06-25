@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "ollama",
-    "description": "Interact with the Ollama application",
+    "description": "Interact with the Ollama application (list, ps, run, show, stop, version)",
     "parameters": {
       "type": "object",
       "properties": {

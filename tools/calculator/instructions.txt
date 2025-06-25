@@ -1,0 +1,1 @@
+'calculator' - Perform any standard math calculation (using bc input format)

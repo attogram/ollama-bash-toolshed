@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "webpage",
-    "description": "Get a web page from the internet",
+    "description": "Get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' for HTML source)",
     "parameters": {
       "type": "object",
       "properties": {

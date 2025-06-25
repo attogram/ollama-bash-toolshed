@@ -31,16 +31,16 @@ getMessage() {
 
 case "$action" in
   list)
-    ollama list
+    ./tools/ollama/list.sh | jq
     ;;
   ps)
-    ollama ps
+    ./tools/ollama/ps.sh | jq
     ;;
   run)
     ollama run "$(getModel)" "$(getMessage)"
     ;;
   show)
-    ollama show "$(getModel)"
+    ./tools/ollama/show.sh "$(getModel)" | jq
     ;;
   stop)
     ollama stop "$(getModel)"

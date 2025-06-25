@@ -7,26 +7,24 @@
 # Usage:
 #  ./ollama-bash-toolshed.sh
 #  ./ollama-bash-toolshed.sh modelName
-#
 
 NAME="ollama-bash-toolshed"
-VERSION="0.31"
+VERSION="0.32"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
-OLLAMA_API_URL="http://localhost:11434" # no slash at end
 TOOLS_DIRECTORY="./tools" # no slash at end
 
-systemPrompt=""    # System Prompt
-model=""           # current model
-messages=""        # json string of all messages
-messageCount=0     # number of messages
-request=""         # json string with the latest request to the model
-requestCount=0     # number of requests
-response=""        # json string with the latest response from the model
-availableTools=()  # array of available tools in the shed
-toolCount=0        # number of tools in the shed
-toolDefinitions="" # json string with all tool definitions
+model=""            # current model
+messages=""         # json string of all messages
+messageCount=0      # number of messages
+request=""          # json string with the latest request to the model
+requestCount=0      # number of requests
+response=""         # json string with the latest response from the model
+availableTools=()   # array of available tools in the shed
+toolCount=0         # number of tools in the shed
+toolDefinitions=""  # json string with all tool definitions
+toolInstructions="" # text list of all tool instructions
 
 configs=(
   'tools:on'    # /config tools [on|off]
@@ -47,6 +45,7 @@ Model Commands:
 
 Tool Commands:
   /tools           - list tools available
+  /instructions    - list instructions for all tools
   /tool toolName   - show tool definition
   /exec toolName param1="value" param2="value" - run a tool, with optional parameters
 
@@ -72,11 +71,8 @@ getSystemPromptIdentity() {
 
 getSystemPromptTools() {
   echo "You have access to these tools:
-- calculator - perform any standard math calculation (using bc input format)
-- datetime   - get the current date and time
-- man        - read command manuals
-- ollama     - interact with the Ollama application (list, ps, run, show, stop, version)
-- webpage    - get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' to get HTML source)
+
+$toolInstructions
 
 Use these tools to assist the user.
 - The tools can help you access information from the internet, solve complex math, get the current time,
@@ -142,6 +138,7 @@ debugJson() {
 getTools() {
   availableTools=()
   toolDefinitions=""
+  toolInstructions=""
   toolCount=0
   if [[ "$toolsConfig" != "on" ]]; then
     return
@@ -159,6 +156,13 @@ getTools() {
         fi
         toolDefinitions+="$(cat "$definitionFile")"
         availableTools+=("$toolName")
+      fi
+      local instructionFile="${toolDir}/instructions.txt"
+      if [ -f "${instructionFile}" ]; then
+        if [ -n "$toolInstructions" ]; then
+          toolInstructions+=$'\n'
+        fi
+        toolInstructions+="$(cat "$instructionFile")"
       fi
       ((toolCount++))
     fi
@@ -257,14 +261,14 @@ createRequest() {
 }
 
 sendRequestToAPI() {
-  echo "$(createRequest)" | curl -s -X POST "${OLLAMA_API_URL}/api/chat" -H 'Content-Type: application/json' -d @-
+  echo "$(createRequest)" | curl -s -X POST "http://localhost:11434/api/chat" -H 'Content-Type: application/json' -d @-
 }
 
 sendRequest() {
   debug "request:"
   debugJson "$(createRequest)"
   ((requestCount++))
-  debug "POST to $OLLAMA_API_URL"
+  debug "sendRequestToAPI"
   echo -n "⏳ Waiting for model response ..."
   response=$(sendRequestToAPI)
   echo -e "$ERASE_LINE"
@@ -409,6 +413,9 @@ processUserCommand() {
       ;;
     /help)
       getHelp
+      ;;
+    /instructions)
+      echo "$toolInstructions"
       ;;
     /list|/models)
       ollama list
