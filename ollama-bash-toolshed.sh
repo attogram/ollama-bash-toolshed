@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.33"
+VERSION="0.34"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -30,6 +30,7 @@ configs=(
   'tools:on'    # /config tools [on|off]
   'think:off'   # /config think [on|off]
   'verbose:off' # /config verbose [on|off]
+  'api:http://localhost:11434' # /config api [url]  (base Ollama API URL, no slash at end)
 )
 
 getHelp() {
@@ -268,7 +269,11 @@ createRequest() {
 }
 
 sendRequestToAPI() {
-  echo "$(createRequest)" | curl -s -X POST "http://localhost:11434/api/chat" -H 'Content-Type: application/json' -d @-
+  if [ -z "$apiConfig" ]; then
+    echo "ERROR: API URL is not set. Use /config api [url] to set it." >&2
+    return 1
+  fi
+  echo "$(createRequest)" | curl -s -X POST "${apiConfig}/api/chat" -H 'Content-Type: application/json' -d @-
 }
 
 sendRequest() {
