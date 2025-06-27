@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.34"
+VERSION="0.35"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -30,7 +30,6 @@ configs=(
   'tools:on'    # /config tools [on|off]
   'think:off'   # /config think [on|off]
   'verbose:off' # /config verbose [on|off]
-  'api:http://localhost:11434' # /config api [url]  (base Ollama API URL, no slash at end)
 )
 
 getHelp() {
@@ -118,9 +117,10 @@ getSystemPrompt() {
 }
 
 setColorScheme() {
-  PROMPT=$'\e[38;5;24m'$'\e[48;5;0m' # background black, foreground blue
-  THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # background black, foreground grey
-  RESET=$'\e[0m' # reset terminal colors
+  LOGO=$'\033[36m\033[40m' # cyan on black
+  PROMPT=$'\033[34m\033[40m' # blue on black
+  THINKING=$'\e[38;5;241m'$'\e[48;5;0m' # grey on black
+  RESET=$'\033[0m' # reset terminal colors
   ERASE_LINE=$'\e[2K'$'\e[A'
 }
 
@@ -269,11 +269,7 @@ createRequest() {
 }
 
 sendRequestToAPI() {
-  if [ -z "$apiConfig" ]; then
-    echo "ERROR: API URL is not set. Use /config api [url] to set it." >&2
-    return 1
-  fi
-  echo "$(createRequest)" | curl -s -X POST "${apiConfig}/api/chat" -H 'Content-Type: application/json' -d @-
+  echo "$(createRequest)" | curl -s -X POST "http://localhost:11434/api/chat" -H 'Content-Type: application/json' -d @-
 }
 
 sendRequest() {
@@ -566,24 +562,36 @@ checkRequirements() {
   done
 }
 
-echo; echo "$NAME v$VERSION";
-
 setConfigs
 setColorScheme
+
+echo "${LOGO}
+
+ ███████████                   ████          █████                   █████
+░█░░░███░░░█                  ░░███         ░░███                   ░░███
+░   ░███  ░   ██████   ██████  ░███   █████  ░███████    ██████   ███████
+    ░███     ███░░███ ███░░███ ░███  ███░░   ░███░░███  ███░░███ ███░░███
+    ░███    ░███ ░███░███ ░███ ░███ ░░█████  ░███ ░███ ░███████ ░███ ░███
+    ░███    ░███ ░███░███ ░███ ░███  ░░░░███ ░███ ░███ ░███░░░  ░███ ░███
+    █████   ░░██████ ░░██████  █████ ██████  ████ █████░░██████ ░░████████
+   ░░░░░     ░░░░░░   ░░░░░░  ░░░░░ ░░░░░░  ░░░░ ░░░░░  ░░░░░░   ░░░░░░░░
+
+${NAME} v${VERSION}${RESET}"
+
 checkRequirements
 addMessage "system" "$(getSystemPrompt)"
 
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
-  echo; echo "⚠️ No model loaded."
-  echo "View available modules: /models"
-  echo "Load a model: /model modelName"
+  echo; echo "⚠️  No model loaded."
+  echo "- View available modules: /list"
+  echo "- Load a model: /run modelName"
 fi
 
-if [ -n "$availableTools" ]; then
-  echo; echo "Tools: ${availableTools[*]}";
-fi
+#if [ -n "$availableTools" ]; then
+#  echo; echo "Tools: ${availableTools[*]}";
+#fi
 echo; echo "/help for commands. /quit or Ctrl+C to exit."
 
 while true; do
