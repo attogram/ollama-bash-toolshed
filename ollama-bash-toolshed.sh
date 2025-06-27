@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.36"
+VERSION="0.37"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -46,8 +46,8 @@ Model Commands:
 
 Tool Commands:
   /tools           - list tools available
-  /instructions    - list instructions for all tools
   /tool toolName   - show tool definition
+  /instructions    - list instructions for all tools
   /exec toolName param1="value" param2="value" - run a tool, with optional parameters
 
 System Commands:
@@ -59,6 +59,7 @@ System Commands:
   /config name       - view a config
   /config name value - set a config to new value
   /quit or /bye      - end the chat
+  !<command>         - run any command in the local shell
   /help              - list of all commands
 EOF
 }
@@ -349,9 +350,7 @@ processToolCall() {
         debug "processToolCall: Unknown function: $function_name"
         continue
       fi
-
       addMessageAssistantToolCall "$response"
-
       #debug "processToolCall: addMessage tool result..."
       addMessage "tool" "$toolResult" "${function_name}" # Add tool response to messages
       debug "processToolCall: sendRequest..."
@@ -367,9 +366,7 @@ userRunTool() {
   local parameters="$2"
   local paramNames=()
   local paramValues=()
-
   echo "Running tool: $tool with parameters: $parameters"
-
   # for every param="value" (or param=value) pair
   while [[ $parameters =~ ([^[:space:]=]+)=((\"[^\"]*\")|([^[:space:]]+)) ]]; do
     key="${BASH_REMATCH[1]}"
@@ -380,7 +377,6 @@ userRunTool() {
     paramValues+=("$val")
     parameters="${parameters#*"${BASH_REMATCH[0]}"}" # trim off processed part
   done
-
   local parametersJson=""
   for i in "${!paramNames[@]}"; do
     #echo "${paramNames[$i]}: ${paramValues[$i]}"
@@ -391,13 +387,16 @@ userRunTool() {
   done
   parametersJson="{$parametersJson}"
   #echo "parametersJson: $parametersJson"
-
   local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
   echo; echo "$($toolFileCall)"
 }
 
 processUserCommand() {
   firstChar=${prompt:0:1}
+  if [ "$firstChar" = "!" ]; then # do any shell command
+    eval "${prompt#*!}"
+    return 0
+  fi
   if [ "$firstChar" != "/" ]; then
     return 1 # no user command was processed
   fi
@@ -571,7 +570,6 @@ setConfigs
 setColorScheme
 
 echo "${LOGO}
-
  ███████████                   ████          █████                   █████
 ░█░░░███░░░█                  ░░███         ░░███                   ░░███
 ░   ░███  ░   ██████   ██████  ░███   █████  ░███████    ██████   ███████
@@ -589,9 +587,7 @@ addMessage "system" "$(getSystemPrompt)"
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
-  echo; echo "⚠️  No model loaded."
-  echo "- View available modules: /list"
-  echo "- Load a model: /run modelName"
+  echo; echo "⚠️  No model loaded - Use '/list' to view available modules, use '/run modelName' to load a model"
 fi
 
 #if [ -n "$availableTools" ]; then
