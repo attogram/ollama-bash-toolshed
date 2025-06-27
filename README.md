@@ -184,13 +184,13 @@ object. That should retrieve the current time and provide the answer to the user
 
 🤔💭 Okay, the user asked, "what time is it?" I need to provide the current time. Let me check 
 the tools available. There's a 'datetime' tool that gets the current date and time. I'll call 
-that tool. The response from the tool is "Fri Jun 27 20:01:14 CEST 2025". Wait, that seems like 
-a future date. Maybe there's a typo? The year 2025 is in the future. But perhaps the tool's 
-response is correct, or maybe it's a test scenario. Regardless, I should present the time as 
-given. The user might be checking if the tool works correctly. I'll format the response to show 
-the time in a friendly way, mentioning the date and time provided by the tool. Let me make sure 
-to use the correct ANSI colors for the time display. Maybe use cyan for the time to make it 
-stand out. Also, check if the user needs anything else after providing the time. 💭🤔
+that tool. The response from the tool is "Fri Jun 27 20:01:14 CEST 2025". Wait, that seems 
+like a future date. Maybe there's a typo? The year 2025 is in the future. But perhaps the 
+tool's response is correct, or maybe it's a test scenario. Regardless, I should present the 
+time as given. The user might be checking if the tool works correctly. I'll format the response 
+to show the time in a friendly way, mentioning the date and time provided by the tool. Let me 
+make sure to use the correct ANSI colors for the time display. Maybe use cyan for the time to 
+make it stand out. Also, check if the user needs anything else after providing the time. 💭🤔
 
 The current time is:
 `Fri Jun 27 20:01:14 CEST 2025`
