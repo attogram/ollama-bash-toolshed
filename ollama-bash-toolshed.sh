@@ -559,7 +559,7 @@ checkRequirements() {
   for requirement in "${requirements[@]}"; do
     check=$(command -v $requirement 2> /dev/null)
     if [ -z "$(command -v $requirement 2> /dev/null)" ]; then
-      echo "Requirement ERROR: Requirment not installed: $requirement"
+      echo "Requirement ERROR: Requirement not installed: $requirement"
     else 
       debug "Requirement OK: $requirement"
     fi
@@ -587,7 +587,7 @@ addMessage "system" "$(getSystemPrompt)"
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
-  echo; echo "⚠️  No model loaded - Use '/list' to view available modules, use '/run modelName' to load a model"
+  echo; echo "⚠️  No model loaded - /list to view available modules, /run modelName to load a model"
 fi
 
 #if [ -n "$availableTools" ]; then
