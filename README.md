@@ -143,9 +143,20 @@ think: on
 ollama-bash-toolshed (qwen3:8b) (5 tools) [0 requests] [1 messages]
 >>> what tools do you have available?
 
-🤔💭 Okay, the user is asking, "what tools do you have available?" Let me check the tools section again.
+🤔💭 Okay, the user is asking, "what tools do you have available?" Let me check the tools 
+section again.
 
-Looking at the provided tools, there's the calculator, datetime, man, ollama, and webpage functions. Each has specific descriptions and parameters. The user wants to know the available tools, so I should list them. But the exact answer depends on the /tools command. Wait, the user might be asking for the list of tools, which is covered by the /tools command. But the assistant's tools are the functions listed in the <tools> section. So the answer should mention each tool's name and a brief description. Let me structure that. Also, the user might want to know what each tool does, so including the descriptions from the function definitions would be helpful. Let me make sure to list each tool with its purpose. For example, calculator for math, datetime for current time, man for command manuals, ollama for interacting with the Ollama app, and webpage for fetching web pages. That should cover it. I should present this in a clear, user-friendly way without using markdown. Alright, time to put that together. 💭🤔
+Looking at the provided tools, there's the calculator, datetime, man, ollama, and webpage 
+functions. Each has specific descriptions and parameters. The user wants to know the 
+available tools, so I should list them. But the exact answer depends on the /tools command.
+Wait, the user might be asking for the list of tools, which is covered by the /tools command. 
+But the assistant's tools are the functions listed in the <tools> section. So the answer 
+should mention each tool's name and a brief description. Let me structure that. Also, the user 
+might want to know what each tool does, so including the descriptions from the function 
+definitions would be helpful. Let me make sure to list each tool with its purpose. For example, 
+calculator for math, datetime for current time, man for command manuals, ollama for interacting 
+with the Ollama app, and webpage for fetching web pages. That should cover it. I should present 
+this in a clear, user-friendly way without using markdown. Alright, time to put that together. 💭🤔
 
     Here are the tools I have available:
 
@@ -160,22 +171,25 @@ Looking at the provided tools, there's the calculator, datetime, man, ollama, an
 ollama-bash-toolshed (qwen3:8b) (5 tools) [1 requests] [3 messages]
 >>> what time is it?
 
-🤔💭 Okay, the user asked, "what time is it?" I need to figure out which tool to use here. Looking at the available tools, 
-there's the 'datetime' tool that gets the current date and time. The parameters for that tool don't require anything, so I 
-can call it without arguments. Let me check the function definition again to make sure. Yep, the 'datetime' function has no 
-required parameters. So I should generate a tool call to 'datetime' with an empty arguments object. That should retrieve the 
-current time and provide the answer to the user. 💭🤔
+🤔💭 Okay, the user asked, "what time is it?" I need to figure out which tool to use here. 
+Looking at the available tools, there's the 'datetime' tool that gets the current date and 
+time. The parameters for that tool don't require anything, so I can call it without arguments. 
+Let me check the function definition again to make sure. Yep, the 'datetime' function has 
+no required parameters. So I should generate a tool call to 'datetime' with an empty arguments 
+object. That should retrieve the current time and provide the answer to the user. 💭🤔
 
 [TOOL] call: {"name":"datetime","arguments":{}}
 [TOOL] result: 30 chars, 1 lines, first line: Fri Jun 27 20:01:14 CEST 2025
 
-🤔💭 Okay, the user asked, "what time is it?" I need to provide the current time. Let me check the tools available. There's 
-a 'datetime' tool that gets the current date and time. I'll call that tool. The response from the tool is "Fri Jun 27 20:01:14 CEST 2025". 
-Wait, that seems like a future date. Maybe there's a typo? The year 2025 is in the future. But perhaps the tool's response is correct, 
-or maybe it's a test scenario. Regardless, I should present the time as given. The user might be checking if the tool works correctly. 
-I'll format the response to show the time in a friendly way, mentioning the date and time provided by the tool. Let me make sure to use 
-the correct ANSI colors for the time display. Maybe use cyan for the time to make it stand out. Also, check if the user needs anything 
-else after providing the time. 💭🤔
+🤔💭 Okay, the user asked, "what time is it?" I need to provide the current time. Let me check 
+the tools available. There's a 'datetime' tool that gets the current date and time. I'll call 
+that tool. The response from the tool is "Fri Jun 27 20:01:14 CEST 2025". Wait, that seems like 
+a future date. Maybe there's a typo? The year 2025 is in the future. But perhaps the tool's 
+response is correct, or maybe it's a test scenario. Regardless, I should present the time as 
+given. The user might be checking if the tool works correctly. I'll format the response to show 
+the time in a friendly way, mentioning the date and time provided by the tool. Let me make sure 
+to use the correct ANSI colors for the time display. Maybe use cyan for the time to make it 
+stand out. Also, check if the user needs anything else after providing the time. 💭🤔
 
 The current time is:
 `Fri Jun 27 20:01:14 CEST 2025`
