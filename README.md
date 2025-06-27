@@ -120,151 +120,108 @@ Error: ```registry.ollama.ai/library/modelName does not support thinking```
 ## Example chat
 
 ```html
-% ./ollama-bash-toolshed.sh llama3-groq-tool-use:8b
+% ./ollama-bash-toolshed.sh qwen3:8b
 
-ollama-bash-toolshed v0.22
+ ███████████                   ████          █████                   █████
+░█░░░███░░░█                  ░░███         ░░███                   ░░███
+░   ░███  ░   ██████   ██████  ░███   █████  ░███████    ██████   ███████
+    ░███     ███░░███ ███░░███ ░███  ███░░   ░███░░███  ███░░███ ███░░███
+    ░███    ░███ ░███░███ ░███ ░███ ░░█████  ░███ ░███ ░███████ ░███ ░███
+    ░███    ░███ ░███░███ ░███ ░███  ░░░░███ ░███ ░███ ░███░░░  ░███ ░███
+    █████   ░░██████ ░░██████  █████ ██████  ████ █████░░██████ ░░████████
+   ░░░░░     ░░░░░░   ░░░░░░  ░░░░░ ░░░░░░  ░░░░ ░░░░░  ░░░░░░   ░░░░░░░░
 
-Tools: calculator datetime man ollama webpage
+ollama-bash-toolshed v0.36
 
-Use /help for commands. Use /quit or Press Ctrl+C to exit.
+/help for commands. /quit or Ctrl+C to exit.
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [0 requests] [0 messages]
->>> what tools can you use?
+ollama-bash-toolshed (qwen3:8b) (5 tools) [0 requests] [1 messages]
+>>> /config think on
 
-I can use several tools including a calculator for math calculations, datetime to get the current date and time, man to fetch manual pages for commands, ollama to interact with the Ollama application, and webpage to retrieve web pages from the internet. Would you like to use any of these tools?
+think: on
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [1 requests] [2 messages]
->>> what day is it?
+ollama-bash-toolshed (qwen3:8b) (5 tools) [0 requests] [1 messages]
+>>> what tools do you have available?
 
-I can help you find out! I will use the datetime tool to get the current date and time for you. Is there anything specific you would like to know about today's date?
+🤔💭 Okay, the user is asking, "what tools do you have available?" Let me check the tools section again.
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [2 requests] [4 messages]
->>> yes, what day is it?
+Looking at the provided tools, there's the calculator, datetime, man, ollama, and webpage functions. Each has specific descriptions and parameters. The user wants to know the available tools, so I should list them. But the exact answer depends on the /tools command. Wait, the user might be asking for the list of tools, which is covered by the /tools command. But the assistant's tools are the functions listed in the <tools> section. So the answer should mention each tool's name and a brief description. Let me structure that. Also, the user might want to know what each tool does, so including the descriptions from the function definitions would be helpful. Let me make sure to list each tool with its purpose. For example, calculator for math, datetime for current time, man for command manuals, ollama for interacting with the Ollama app, and webpage for fetching web pages. That should cover it. I should present this in a clear, user-friendly way without using markdown. Alright, time to put that together. 💭🤔
 
-[TOOL] {
-"name": "datetime",
-"arguments": {}
-}
-[TOOL] result: 30 characters, 1 lines
-[TOOL] result: Tue Jun 24 00:01:43 CEST 2025
+    Here are the tools I have available:
 
-According to the datetime tool, today is Tuesday, June 24, 2025. Is there anything else you would like to know or any other task I can assist with?
+    1. **calculator** - Perform math calculations (e.g., `calculator input="2+2"`).
+    2. **datetime** - Get the current date and time.
+    3. **man** - Read command manuals (e.g., `man command`).
+    4. **ollama** - Interact with the Ollama application (e.g., `ollama run model-name`).
+    5. **webpage** - Fetch web pages as text or raw HTML (e.g., `webpage url="https://example.com"`).
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [4 requests] [7 messages]
->>> what is 1234 * 5678
+    Let me know if you'd like details about a specific tool!
 
-I can use the calculator tool to help with that! The calculation is 1234 * 5678. Would you like me to proceed with this calculation?
+ollama-bash-toolshed (qwen3:8b) (5 tools) [1 requests] [3 messages]
+>>> what time is it?
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [5 requests] [9 messages]
->>> yes
+🤔💭 Okay, the user asked, "what time is it?" I need to figure out which tool to use here. Looking at the available tools, 
+there's the 'datetime' tool that gets the current date and time. The parameters for that tool don't require anything, so I 
+can call it without arguments. Let me check the function definition again to make sure. Yep, the 'datetime' function has no 
+required parameters. So I should generate a tool call to 'datetime' with an empty arguments object. That should retrieve the 
+current time and provide the answer to the user. 💭🤔
 
-[TOOL] {
-"name": "calculator",
-"arguments": {
-"input": "1234*5678"
-}
-}
-[TOOL] result: 8 characters, 1 lines
-[TOOL] result: 7006652
+[TOOL] call: {"name":"datetime","arguments":{}}
+[TOOL] result: 30 chars, 1 lines, first line: Fri Jun 27 20:01:14 CEST 2025
 
-The result of the calculation 1234 * 5678 is 7,006,652. Do you have any other calculations or questions?
+🤔💭 Okay, the user asked, "what time is it?" I need to provide the current time. Let me check the tools available. There's 
+a 'datetime' tool that gets the current date and time. I'll call that tool. The response from the tool is "Fri Jun 27 20:01:14 CEST 2025". 
+Wait, that seems like a future date. Maybe there's a typo? The year 2025 is in the future. But perhaps the tool's response is correct, 
+or maybe it's a test scenario. Regardless, I should present the time as given. The user might be checking if the tool works correctly. 
+I'll format the response to show the time in a friendly way, mentioning the date and time provided by the tool. Let me make sure to use 
+the correct ANSI colors for the time display. Maybe use cyan for the time to make it stand out. Also, check if the user needs anything 
+else after providing the time. 💭🤔
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [7 requests] [12 messages]
->>> show me the text of the webpage example.com
+The current time is:
+`Fri Jun 27 20:01:14 CEST 2025`
 
-I can use the webpage tool to fetch the webpage for you. Would you like me to retrieve the HTML source or just the text content?
+Let me know if you need anything else!
 
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [8 requests] [14 messages]
->>> yes
-
-[TOOL] {
-"name": "webpage",
-"arguments": {
-"format": "text",
-"url": "example.com"
-}
-}
-[TOOL] result: 261 characters, 11 lines
-[TOOL] result: Example Domain
-
-I've retrieved the text content of the webpage example.com. Here it is: "Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission."
-
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [10 requests] [17 messages]
+ollama-bash-toolshed (qwen3:8b) (5 tools) [3 requests] [7 messages]
 >>> /messages
-
 [
-{
-"role": "user",
-"content": "what tools can you use?"
-},
-{
-"role": "assistant",
-"content": "I can use several tools including a calculator for math calculations, datetime to get the current date and time, man to fetch manual pages for commands, ollama to interact with the Ollama application, and webpage to retrieve web pages from the internet. Would you like to use any of these tools?"
-},
-{
-"role": "user",
-"content": "what day is it?"
-},
-{
-"role": "assistant",
-"content": "I can help you find out! I will use the datetime tool to get the current date and time for you. Is there anything specific you would like to know about today's date?"
-},
-{
-"role": "user",
-"content": "yes, what day is it?"
-},
-{
-"role": "tool",
-"content": "Tue Jun 24 00:01:43 CEST 2025"
-},
-{
-"role": "assistant",
-"content": "According to the datetime tool, today is Tuesday, June 24, 2025. Is there anything else you would like to know or any other task I can assist with?"
-},
-{
-"role": "user",
-"content": "what is 1234 * 5678"
-},
-{
-"role": "assistant",
-"content": "I can use the calculator tool to help with that! The calculation is 1234 * 5678. Would you like me to proceed with this calculation?"
-},
-{
-"role": "user",
-"content": "yes"
-},
-{
-"role": "tool",
-"content": "7006652"
-},
-{
-"role": "assistant",
-"content": "The result of the calculation 1234 * 5678 is 7,006,652. Do you have any other calculations or questions?"
-},
-{
-"role": "user",
-"content": "show me the text of the webpage example.com"
-},
-{
-"role": "assistant",
-"content": "I can use the webpage tool to fetch the webpage for you. Would you like me to retrieve the HTML source or just the text content?"
-},
-{
-"role": "user",
-"content": "yes"
-},
-{
-"role": "tool",
-"content": "Example Domain\n\n   This domain is for use in illustrative examples in documents. You may\n   use this domain in literature without prior coordination or asking for\n   permission.\n\n   [1]More information...\n\nReferences\n\n   1. https://www.iana.org/domains/example"
-},
-{
-"role": "assistant",
-"content": "I've retrieved the text content of the webpage example.com. Here it is: \"Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\""
-}
+  {
+    "role": "system",
+    "content": "You are an AI assistant.\n- You are inside the Ollama Bash Toolshed.\n- You are running on the Ollama application.\n\nYou have access to these tools:\n\n'calculator' - Perform any standard math calculation (using bc input format)\n'datetime' - Get the current date and time\n'man' - Read command manuals\n'ollama' - Interact with the Ollama application (list, ps, run, show, stop, version)\n'webpage' - Get a web page, in format 'text' or 'raw' (defaults to 'text') ('raw' for HTML source)\n\nUse these tools to assist the user.\n- The tools can help you access information from the internet, solve complex math, get the current time,\n  understand commands and explore Ollama models.\n- Always tell the user the results of your tool calls.\n- Base your response on data you get from using the tools, and/or your own knowledge.\n\nYour response is rendered in a text terminal.\n- You may use ANSI escape codes to color your response.\n- COLOR    FOREGROUND      BACKGROUND\n  red      `\\033[31m`   `\\033[41m`\n  green    `\\033[32m`   `\\033[42m`\n  yellow   `\\033[33m`   `\\033[43m`\n  blue     `\\033[34m`   `\\033[44m`\n  magenta  `\\033[35m`   `\\033[45m`\n  cyan     `\\033[36m`   `\\033[46m`\n  black    `\\033[30m`   `\\033[40m`\n  white    `\\033[37m`   `\\033[47m`\n- To reset text to default colors: `\\033[0m`\n\nYou can assist with commands the user may use inside Ollama Bash Toolshed.\n- Only the user may use these commands.\n- Command list:\n\nModel Commands:\n  /list            - List models\n  /ps              - List running models\n  /pull modelName  - Pull new model\n  /run modelName   - Run a model\n  /show            - Current model info\n  /show modelName  - Model info\n  /stop modelName  - Stop a running model\n\nTool Commands:\n  /tools           - list tools available\n  /instructions    - list instructions for all tools\n  /tool toolName   - show tool definition\n  /exec toolName param1=\"value\" param2=\"value\" - run a tool, with optional parameters\n\nSystem Commands:\n  /multi             - enter multi-line prompt\n  /messages          - list of current messages\n  /system            - show system prompt\n  /clear             - clear the message and model cache\n  /config            - view all configs (tools, think, verbose)\n  /config name       - view a config\n  /config name value - set a config to new value\n  /quit or /bye      - end the chat\n  /help              - list of all commands"
+  },
+  {
+    "role": "user",
+    "content": "what tools do you have available?"
+  },
+  {
+    "role": "assistant",
+    "content": "Here are the tools I have available:\n\n1. **calculator** - Perform math calculations (e.g., `calculator input=\"2+2\"`).\n2. **datetime** - Get the current date and time.\n3. **man** - Read command manuals (e.g., `man command`).\n4. **ollama** - Interact with the Ollama application (e.g., `ollama run model-name`).\n5. **webpage** - Fetch web pages as text or raw HTML (e.g., `webpage url=\"https://example.com\"`).\n\nLet me know if you'd like details about a specific tool!"
+  },
+  {
+    "role": "user",
+    "content": "what time is it?"
+  },
+  {
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "name": "datetime",
+          "arguments": {}
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "name": "datetime",
+    "content": "Fri Jun 27 20:01:14 CEST 2025"
+  },
+  {
+    "role": "assistant",
+    "content": "The current time is:  \n`\\033[36mFri Jun 27 20:01:14 CEST 2025\\033[0m`  \n\nLet me know if you need anything else!"
+  }
 ]
-
-ollama-bash-toolshed (llama3-groq-tool-use:8b) (5 tools) [10 requests] [17 messages]
->>>
 ```
 
 ## Attogram Artificial Intelligence Projects
