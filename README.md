@@ -58,6 +58,7 @@ System Commands:
   /config name       - view a config
   /config name value - set a config to new value
   /quit or /bye      - end the chat
+  !<command>         - run any command in the local shell
   /help              - list of all commands
 ```
 
