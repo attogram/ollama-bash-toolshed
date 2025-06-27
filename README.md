@@ -12,7 +12,7 @@ Run the toolshed:
   ```
   * This will start the toolshed with no model loaded
     * use ```/list``` to get available models
-    * use ```/load modelName``` to load a model
+    * use ```/run modelName``` to load a model
 
 Run the toolshed with a specific model:
   ```
