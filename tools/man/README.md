@@ -4,11 +4,9 @@
 
 Get the manual page for a command.
 
-# User run
-
-Examples:
-* ```/run man command=wc```
-* ```/run man command=find```
+# Examples running locally
+- ```/exec man command=wc```
+- ```/exec man command=find```
 
 # Parameters
 

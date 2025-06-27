@@ -1,19 +1,18 @@
 # ollama
 
-**ollama** - A tool for the [Ollama Bash Toolshed](../../).
+**ollama** - A tool for the [Ollama Bash Toolshed](../..).
 
 # scripts
 - ```list.sh```
 - ```ps.sh```
 - ```show.sh```
+- ```capabilitites.sh```
+- ```capable.sh```
 
-# Example running locally
-
-```/exec ollama action=ollama_version```
-
-```/exec ollama action=models_list```
-
-```/exec ollama action=model_info model=qwen3:0.6b```
+# Examples running locally
+- ```/exec ollama action=ollama_version```
+- ```/exec ollama action=models_list```
+- ```/exec ollama action=model_info model=qwen3:0.6b```
 
 # Parameters
 

@@ -4,10 +4,11 @@
 
 Get the current date and time.
 
-# Parameters
+# Example running locally
+- ```/exec datetime```
 
+# Parameters
 - none
 
 # Requirements
-
 - ```date``` command
