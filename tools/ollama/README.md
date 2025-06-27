@@ -10,9 +10,9 @@
 - ```capable.sh```
 
 # Examples running locally
-- ```/exec ollama action=ollama_version```
-- ```/exec ollama action=models_list```
-- ```/exec ollama action=model_info model=qwen3:0.6b```
+- ```/exec ollama action=version```
+- ```/exec ollama action=list```
+- ```/exec ollama action=show model=qwen3:0.6b```
 
 # Parameters
 
