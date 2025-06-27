@@ -153,20 +153,21 @@ Wait, the user might be asking for the list of tools, which is covered by the /t
 But the assistant's tools are the functions listed in the <tools> section. So the answer 
 should mention each tool's name and a brief description. Let me structure that. Also, the user 
 might want to know what each tool does, so including the descriptions from the function 
-definitions would be helpful. Let me make sure to list each tool with its purpose. For example, 
-calculator for math, datetime for current time, man for command manuals, ollama for interacting 
-with the Ollama app, and webpage for fetching web pages. That should cover it. I should present 
-this in a clear, user-friendly way without using markdown. Alright, time to put that together. 💭🤔
+definitions would be helpful. Let me make sure to list each tool with its purpose. For 
+example, calculator for math, datetime for current time, man for command manuals, ollama for 
+interacting with the Ollama app, and webpage for fetching web pages. That should cover it. I 
+should present this in a clear, user-friendly way without using markdown. Alright, time to 
+put that together. 💭🤔
 
-    Here are the tools I have available:
+Here are the tools I have available:
 
-    1. **calculator** - Perform math calculations (e.g., `calculator input="2+2"`).
-    2. **datetime** - Get the current date and time.
-    3. **man** - Read command manuals (e.g., `man command`).
-    4. **ollama** - Interact with the Ollama application (e.g., `ollama run model-name`).
-    5. **webpage** - Fetch web pages as text or raw HTML (e.g., `webpage url="https://example.com"`).
+1. **calculator** - Perform math calculations (e.g., `calculator input="2+2"`).
+2. **datetime** - Get the current date and time.
+3. **man** - Read command manuals (e.g., `man command`).
+4. **ollama** - Interact with the Ollama application (e.g., `ollama run model-name`).
+5. **webpage** - Fetch web pages as text or raw HTML (e.g., `webpage url="https://example.com"`).
 
-    Let me know if you'd like details about a specific tool!
+Let me know if you'd like details about a specific tool!
 
 ollama-bash-toolshed (qwen3:8b) (5 tools) [1 requests] [3 messages]
 >>> what time is it?
