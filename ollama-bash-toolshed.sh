@@ -587,7 +587,7 @@ addMessage "system" "$(getSystemPrompt)"
 parseCommandLine "$@"
 
 if [ -z "$model" ]; then
-  echo; echo "⚠️  No model loaded - /list to view available modules, /run modelName to load a model"
+  echo; echo "⚠️  No model loaded - /list to view available models, /run modelName to load a model"
 fi
 
 #if [ -n "$availableTools" ]; then
