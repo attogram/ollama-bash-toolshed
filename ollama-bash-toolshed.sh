@@ -9,11 +9,12 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.37"
+VERSION="0.38"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
 TOOLS_DIRECTORY="./tools" # no slash at end
+WORKSPACE_DIRECTORY="./workspace" # no slash at end
 
 model=""            # current model
 messages=""         # json string of all messages
@@ -53,6 +54,9 @@ Tool Commands:
 System Commands:
   /multi             - enter multi-line prompt
   /messages          - list of current messages
+  /messages save     - save messages to a file.  Optional <file> to specify file. Must be in ./workspace directory.
+  /messages load     - load messages from a file. Optional <file> to specify file. Must be in ./workspace directory.
+  /messages append   - append to current messages list from a file. Optional <file> to specify file. Must be in ./workspace directory.
   /system            - show system prompt
   /clear             - clear the message and model cache
   /config            - view all configs (tools, think, verbose)
@@ -391,6 +395,74 @@ userRunTool() {
   echo; echo "$($toolFileCall)"
 }
 
+fileIsInWorkspace() {
+  case "$(realpath "$(dirname "$1")")" in
+    "$(realpath "${WORKSPACE_DIRECTORY}")"*)
+      return 0 # File is inside workspace
+      ;;
+    *)
+      return 1 # File is not inside workspace
+      ;;
+  esac
+}
+
+processUserCommandMessages() {
+  local action="${commandArray[1]}"
+  local file="${commandArray[2]}"
+  if [ -z "$action" ]; then # /messages = list all messages
+    echo "{\"messages\":[${messages}]}" | jq -r '.messages' # 2>/dev/null # list all messages
+    return 0
+  fi
+  if [ -z "$file" ]; then  # if no file specified, then use default messages filename
+    file="${WORKSPACE_DIRECTORY}/messages.json"
+  fi
+  fileIsInWorkspace "$file"
+  if [[ $? = 1 ]]; then
+    echo "Error: file must be inside the workspace: ${WORKSPACE_DIRECTORY}"
+    return
+  fi
+  if [[ "${action}" == "save" ]]; then
+    echo "${messages}" > "$file"
+    echo "Saved messages to: $file"
+    echo "$(ls -al "$file")"
+    return 0
+  fi
+  if [ ! -f "$file" ]; then
+      echo "Error: File not found"
+      return 0
+  fi
+  local load="$(cat "$file")"
+  # TODO - validate load is valid json -- cat file.txt | jq empty
+  case "${action}" in
+    load)
+      messages="$load"
+      echo "Loaded messages from: $file"
+      ;;
+    append)
+      messages+=",$load"
+      echo "Appended to messages from: $file"
+      ;;
+    *)
+      echo "Error: unknown messages action"
+      ;;
+  esac
+}
+
+processUserCommandConfig() {
+  if [ -n "${commandArray[2]}" ]; then # set a config
+    setConfig "${commandArray[1]}" "${commandArray[2]}"
+    return 0
+  fi
+  if [ -n "${commandArray[1]}" ]; then # list a config
+    echo -n "${commandArray[1]}: "
+    getConfig "${commandArray[1]}"
+    return 0
+  fi
+  for config in "${configs[@]}"; do # list all configs
+    echo "${config%%:*}: ${config#*:}"
+  done
+}
+
 processUserCommand() {
   firstChar=${prompt:0:1}
   if [ "$firstChar" = "!" ]; then # do any shell command
@@ -406,18 +478,15 @@ processUserCommand() {
       clear
       ;;
     /config|/configs|/set)
-      if [ -n "${commandArray[2]}" ]; then
-        setConfig "${commandArray[1]}" "${commandArray[2]}"
-        continue
+      processUserCommandConfig
+      ;;
+    /exec)
+      local tool="${commandArray[1]}"
+      if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
+        userRunTool "$tool" "${commandArray[*]:2}"
+        return 0
       fi
-      if [ -n "${commandArray[1]}" ]; then
-        echo -n "${commandArray[1]}: "
-        getConfig "${commandArray[1]}"
-        continue
-      fi
-      for config in "${configs[@]}"; do
-        echo "${config%%:*}: ${config#*:}"
-      done
+      echo "Error: Tool not in the shed"
       ;;
     /help)
       getHelp
@@ -429,7 +498,7 @@ processUserCommand() {
       ollama list
       ;;
     /messages|/msgs)
-      echo "{\"messages\":[${messages}]}" | jq -r '.messages' # 2>/dev/null
+      processUserCommandMessages
       ;;
     /multi)
       echo "Multi line input mode. Press Ctrl+D on a new line when finished."
@@ -444,7 +513,7 @@ processUserCommand() {
     /pull)
       if [ -z "${commandArray[1]}" ]; then
         echo "Error: no model specified"
-        continue
+        return 0
       fi
       ollama pull "${commandArray[1]}"
       ;;
@@ -456,30 +525,22 @@ processUserCommand() {
       local newModel="${commandArray[1]}"
       if [ -z "$newModel" ]; then
         echo "Error: no model specified"
-        continue
+        return 0
       fi
       echo "Loading model: $newModel"
       model="$newModel"
       ;;
-    /exec)
-      local tool="${commandArray[1]}"
-      if [[ " ${availableTools[*]} " =~ " ${tool} " ]]; then # If tool is defined
-        userRunTool "$tool" "${commandArray[*]:2}"
-        continue
-      fi
-      echo "Error: Tool not in the shed"
-      ;;
     /show)
       if [ -z "${commandArray[1]}" ]; then
         ollama show "$model"
-        continue
+        return 0
       fi
       ollama show "${commandArray[1]}"
       ;;
     /stop)
       if [ -z "${commandArray[1]}" ]; then
         echo "Error: no model specified"
-        continue
+        return 0
       fi
       ollama stop "${commandArray[1]}"
       ;;
@@ -489,12 +550,12 @@ processUserCommand() {
     /tool)
       if [ -z "${commandArray[1]}" ]; then
         echo "Error: no tool specified"
-        continue
+        return 0
       fi
       local definitionFile="$TOOLS_DIRECTORY/${commandArray[1]}/definition.json"
       if ! [ -f "$definitionFile" ]; then
         echo "Error: tool does not exist"
-        continue
+        return 0
       fi
       cat "$definitionFile" | jq -r '.' 2>/dev/null
       ;;
@@ -505,7 +566,7 @@ processUserCommand() {
       echo "Unknown command: ${commandArray[0]}"
       ;;
   esac
-  return 0 # user command was processed
+  return 0 # processed user command
 }
 
 showThinking() {

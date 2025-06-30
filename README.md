@@ -45,13 +45,16 @@ Model Commands:
 
 Tool Commands:
   /tools           - list tools available
-  /instructions    - list instructions for all tools
   /tool toolName   - show tool definition
+  /instructions    - list instructions for all tools
   /exec toolName param1="value" param2="value" - run a tool, with optional parameters
 
 System Commands:
   /multi             - enter multi-line prompt
   /messages          - list of current messages
+  /messages save     - save messages to a file.  Optional <file> to specify file. Must be in ./workspace directory.
+  /messages load     - load messages from a file. Optional <file> to specify file. Must be in ./workspace directory.
+  /messages append   - append to current messages list from a file. Optional <file> to specify file. Must be in ./workspace directory.
   /system            - show system prompt
   /clear             - clear the message and model cache
   /config            - view all configs (tools, think, verbose)
@@ -67,6 +70,7 @@ System Commands:
 * ```tools``` - [on/off] - use tools
 * ```think``` - [on/off] - split out thinking from message content
 * ```verbose``` - [on/off] - verbose debug messages
+* ```api``` - [url] - base Ollama API URL (no slash at end)
 
 To use a model without tools capability: /config tools off
 
