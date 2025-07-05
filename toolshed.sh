@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.40"
+VERSION="0.41"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -380,7 +380,9 @@ processToolCall() {
         debug "processToolCall: Running toolFile: $toolFile"
         echo -n "[TOOL] call: "
         echo "$function" | jq -c '.' 2>/dev/null
+        set -o noglob
         toolResult="$($toolFile)"
+        set +o noglob
         echo -n "[TOOL] result: $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines,"
         echo " first line: $(echo "$toolResult" | head -1)"; echo
         debug "processToolCall: Tool result: $toolResult"
@@ -404,7 +406,7 @@ userRunTool() {
   local parameters="$2"
   local paramNames=()
   local paramValues=()
-  echo "Running tool: $tool with parameters: $parameters"
+  echo -n "Running tool '$tool'"
   # for every param="value" (or param=value) pair
   while [[ $parameters =~ ([^[:space:]=]+)=((\"[^\"]*\")|([^[:space:]]+)) ]]; do
     key="${BASH_REMATCH[1]}"
@@ -424,9 +426,11 @@ userRunTool() {
     parametersJson+="\"${paramNames[$i]}\":\"${paramValues[$i]}\""
   done
   parametersJson="{$parametersJson}"
-  #echo "parametersJson: $parametersJson"
+  echo " with parameters $parametersJson"
   local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
+  set -o noglob
   echo; echo "$($toolFileCall)"
+  set +o noglob
 }
 
 fileIsInWorkspace() {
