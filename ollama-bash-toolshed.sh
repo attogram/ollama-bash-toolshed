@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.38"
+VERSION="0.39"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -627,9 +627,9 @@ checkRequirements() {
   done
 }
 
+parseCommandLine "$@"
 setConfigs
 setColorScheme
-
 echo "${LOGO}
  ███████████                   ████          █████                   █████
 ░█░░░███░░░█                  ░░███         ░░███                   ░░███
@@ -641,27 +641,15 @@ echo "${LOGO}
    ░░░░░     ░░░░░░   ░░░░░░  ░░░░░ ░░░░░░  ░░░░ ░░░░░  ░░░░░░   ░░░░░░░░
 
 ${NAME} v${VERSION}${RESET}"
-
 checkRequirements
 addMessage "system" "$(getSystemPrompt)"
-
-parseCommandLine "$@"
-
 if [ -z "$model" ]; then
   echo; echo "⚠️  No model loaded - /list to view available models, /run modelName to load a model"
 fi
-
-#if [ -n "$availableTools" ]; then
-#  echo; echo "Tools: ${availableTools[*]}";
-#fi
 echo; echo "/help for commands. /quit or Ctrl+C to exit."
-
 while true; do
-    echo
-    echo -n "${PROMPT}${NAME} (${model:-no model})"
-    echo -n " ($toolCount tools)"
-    echo -n " [$requestCount requests]"
-    echo -n " [$messageCount messages]"
+    echo; echo -n "${PROMPT}${NAME} (${model:-no model})"
+    echo -n " ($toolCount tools) [$requestCount requests] [$messageCount messages]"
     echo; echo -n ">>>${RESET} "
     read -r prompt
     echo
