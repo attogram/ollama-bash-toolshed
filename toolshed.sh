@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.39"
+VERSION="0.40"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -33,6 +33,18 @@ configs=(
   'verbose:off' # /config verbose [on|off]
   'api:http://localhost:11434' # /config api [url]  (base Ollama API URL, no slash at end)
 )
+
+usage() {
+  me=$(basename "$0")
+  echo "$NAME"; echo
+  echo "Usage:"
+  echo "  ./$me [flags]"
+  echo "  ./$me [model]"
+  echo; echo "Flags:";
+  echo "  -h      -- Help for $NAME"
+  echo "  -v      -- Show version information"
+  echo "  [model] -- Set the model"
+}
 
 getHelp() {
     cat << EOF
@@ -66,6 +78,32 @@ System Commands:
   !<command>         - run any command in the local shell
   /help              - list of all commands
 EOF
+}
+
+parseCommandLine() {
+  model=""
+  while (( "$#" )); do
+    case "$1" in
+      -h) # help
+        usage
+        exit 0
+        ;;
+      -v) # version
+        echo "$NAME v$VERSION"
+        exit 0
+        ;;
+      -*|--*=) # unsupported flags
+        echo "Error: unsupported argument: $1" >&2
+        exit 1
+        ;;
+      *) # preserve positional arguments
+        model+="$1"
+        shift
+        ;;
+    esac
+  done
+  # set positional arguments in their proper place
+  eval set -- "${model}"
 }
 
 getSystemPromptIdentity() {
@@ -225,10 +263,6 @@ setConfig() {
   done
   configs=("${newConfigs[@]}")
   setConfigs
-}
-
-parseCommandLine() {
-  model="$1"
 }
 
 safeJson() {

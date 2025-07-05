@@ -8,7 +8,7 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 
 Run the toolshed:
   ```
-  ./ollama-bash-toolshed.sh
+  ./toolshed.sh
   ```
   * This will start the toolshed with no model loaded
     * use ```/list``` to get available models
@@ -16,7 +16,7 @@ Run the toolshed:
 
 Run the toolshed with a specific model:
   ```
-  ./ollama-bash-toolshed.sh "modelname"
+  ./toolshed.sh "modelname"
   ```
 
 * For models with tools capabilities:
@@ -108,7 +108,7 @@ To add a new tool:
   - Example: ```tools/weather/run.sh```
 - chmod your bash script. 
   - Example: ```chmod +x tools/weather/run.sh```
-- re-run ```./ollama-bash-toolshed.sh``` to use your new tool.
+- re-run ```./toolshed.sh``` to use your new tool.
 
 ## Common errors
 
@@ -125,7 +125,7 @@ Error: ```registry.ollama.ai/library/modelName does not support thinking```
 ## Example chat
 
 ```html
-% ./ollama-bash-toolshed.sh qwen3:8b
+% ./toolshed.sh qwen3:8b
 
  ███████████                   ████          █████                   █████
 ░█░░░███░░░█                  ░░███         ░░███                   ░░███
