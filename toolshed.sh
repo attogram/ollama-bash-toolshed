@@ -9,7 +9,7 @@
 #  ./toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.42"
+VERSION="0.44"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -81,49 +81,10 @@ System Commands:
 EOF
 }
 
-parseCommandLine() {
-  model=""
-  while (( "$#" )); do
-    case "$1" in
-      -h) # help
-        usage
-        exit 0
-        ;;
-      -v) # version
-        echo "$NAME v$VERSION"
-        exit 0
-        ;;
-      -*|--*=) # unsupported flags
-        echo "Error: unsupported argument: $1" >&2
-        exit 1
-        ;;
-      *) # preserve positional arguments
-        model+="$1"
-        shift
-        ;;
-    esac
-  done
-  # set positional arguments in their proper place
-  eval set -- "${model}"
-}
-
 getSystemPromptIdentity() {
-  echo "You are an AI assistant.
-- You are inside the Ollama Bash Toolshed.
-- You are running on the Ollama application.
-"
-}
-
-getSystemPromptTools() {
-  echo "You have access to these tools:
-
-$toolInstructions
-
-Use these tools to assist the user.
-- The tools can help you access information from the internet, solve complex math, get the current time,
-  understand commands and explore Ollama models.
-- Always tell the user the results of your tool calls.
-- Base your response on data you get from using the tools, and/or your own knowledge.
+  echo "You are an AI assistant."
+  echo "You are inside the Ollama Bash Toolshed."
+  echo "You are running on the Ollama application.
 "
 }
 
@@ -154,11 +115,6 @@ $(getHelp)
 
 getSystemPrompt() {
   getSystemPromptIdentity
-  if [[ "$toolsConfig" == "on" ]]; then
-    getSystemPromptTools
-  fi
-  getSystemPromptTerminal
-  getSystemPromptUserCommands
 }
 
 setColorScheme() {
@@ -369,8 +325,8 @@ runTool() {
   set -o noglob # turn off glob - do not expand *
   toolResult="$($TOOLS_DIRECTORY/${toolName}/run.sh ${toolArgs})"
   set +o noglob # turn on glob
-  echo "[TOOL] result: $(echo "$toolResult" | wc -w | sed 's/ //g') words, $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines"
-  echo "[TOOL] result: 1st line: $(echo "$toolResult" | head -1)"; echo
+  echo -n "[TOOL] result: $(echo "$toolResult" | wc -w | sed 's/ //g') words, $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines"
+  echo ", 1st line: $(echo "$toolResult" | head -1)"; echo
 }
 
 processToolCall() {
@@ -656,6 +612,32 @@ checkRequirements() {
       debug "Requirement OK: $requirement"
     fi
   done
+}
+
+parseCommandLine() {
+  model=""
+  while (( "$#" )); do
+    case "$1" in
+      -h) # help
+        usage
+        exit 0
+        ;;
+      -v) # version
+        echo "$NAME v$VERSION"
+        exit 0
+        ;;
+      -*|--*=) # unsupported flags
+        echo "Error: unsupported argument: $1" >&2
+        exit 1
+        ;;
+      *) # preserve positional arguments
+        model+="$1"
+        shift
+        ;;
+    esac
+  done
+  # set positional arguments in their proper place
+  eval set -- "${model}"
 }
 
 parseCommandLine "$@"
