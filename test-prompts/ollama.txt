@@ -1,0 +1,1 @@
+what models are currently running in ollama?
