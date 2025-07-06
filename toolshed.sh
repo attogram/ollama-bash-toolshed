@@ -9,7 +9,7 @@
 #  ./ollama-bash-toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.41"
+VERSION="0.42"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -26,6 +26,7 @@ availableTools=()   # array of available tools in the shed
 toolCount=0         # number of tools in the shed
 toolDefinitions=""  # json string with all tool definitions
 toolInstructions="" # text list of all tool instructions
+toolResult=""       # result of last tool call
 
 configs=(
   'tools:on'    # /config tools [on|off]
@@ -361,6 +362,17 @@ processErrors() {
   return 0 # no errors
 }
 
+runTool() {
+  toolName="$1"
+  toolArgs="$2"
+  echo "[TOOL] call: $toolName: $toolArgs"
+  set -o noglob # turn off glob - do not expand *
+  toolResult="$($TOOLS_DIRECTORY/${toolName}/run.sh ${toolArgs})"
+  set +o noglob # turn on glob
+  echo "[TOOL] result: $(echo "$toolResult" | wc -w | sed 's/ //g') words, $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines"
+  echo "[TOOL] result: 1st line: $(echo "$toolResult" | head -1)"; echo
+}
+
 processToolCall() {
   if echo "$response" | jq -e '.message.tool_calls' >/dev/null; then # Check if response contains tool_calls
     showThinking
@@ -374,28 +386,15 @@ processToolCall() {
       local function_name=$(echo "$tool_call" | jq -r '.function.name' 2>/dev/null)
       local function_arguments=$(echo "$tool_call" | jq -r '.function.arguments' 2>/dev/null)
       debug "processToolCall: Calling function: $function_name"
-      local toolResult
       if [[ " ${availableTools[*]} " =~ " ${function_name} " ]]; then # If tool is defined
-        toolFile="$TOOLS_DIRECTORY/${function_name}/run.sh ${function_arguments}"
-        debug "processToolCall: Running toolFile: $toolFile"
-        echo -n "[TOOL] call: "
-        echo "$function" | jq -c '.' 2>/dev/null
-        set -o noglob
-        toolResult="$($toolFile)"
-        set +o noglob
-        echo -n "[TOOL] result: $(echo "$toolResult" | wc -c | sed 's/ //g') chars, $(echo "$toolResult" | wc -l | sed 's/ //g') lines,"
-        echo " first line: $(echo "$toolResult" | head -1)"; echo
-        debug "processToolCall: Tool result: $toolResult"
+        runTool "$function_name" "$function_arguments"
       else
         debug "processToolCall: Unknown function: $function_name"
         continue
       fi
       addMessageAssistantToolCall "$response"
-      #debug "processToolCall: addMessage tool result..."
       addMessage "tool" "$toolResult" "${function_name}" # Add tool response to messages
-      debug "processToolCall: sendRequest..."
       sendRequest
-      #echo "DEBUG: tool response: "; echo "$response" | jq -r '.' 2>/dev/null
       processToolCall
     done < <(echo "$tool_calls" | jq -c '.')
   fi
@@ -406,7 +405,7 @@ userRunTool() {
   local parameters="$2"
   local paramNames=()
   local paramValues=()
-  echo -n "Running tool '$tool'"
+  local parametersJson=""
   # for every param="value" (or param=value) pair
   while [[ $parameters =~ ([^[:space:]=]+)=((\"[^\"]*\")|([^[:space:]]+)) ]]; do
     key="${BASH_REMATCH[1]}"
@@ -417,20 +416,14 @@ userRunTool() {
     paramValues+=("$val")
     parameters="${parameters#*"${BASH_REMATCH[0]}"}" # trim off processed part
   done
-  local parametersJson=""
   for i in "${!paramNames[@]}"; do
-    #echo "${paramNames[$i]}: ${paramValues[$i]}"
     if [ -n "$parametersJson" ]; then
       parametersJson+=","
     fi
     parametersJson+="\"${paramNames[$i]}\":\"${paramValues[$i]}\""
   done
-  parametersJson="{$parametersJson}"
-  echo " with parameters $parametersJson"
-  local toolFileCall="$TOOLS_DIRECTORY/${tool}/run.sh ${parametersJson}"
-  set -o noglob
-  echo; echo "$($toolFileCall)"
-  set +o noglob
+  runTool "$tool" "{$parametersJson}"
+  echo; echo "$toolResult"
 }
 
 fileIsInWorkspace() {
