@@ -5,8 +5,8 @@
 # Bash scripts to chat with tool using models. Add new tools to your shed with ease. Runs on Ollama.
 #
 # Usage:
-#  ./ollama-bash-toolshed.sh
-#  ./ollama-bash-toolshed.sh modelName
+#  ./toolshed.sh
+#  ./toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
 VERSION="0.42"
