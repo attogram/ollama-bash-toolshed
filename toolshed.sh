@@ -9,7 +9,7 @@
 #  ./toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.44"
+VERSION="0.45"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
@@ -232,7 +232,7 @@ addMessage() {
   local toolName="$3"
   newMessage="{\"role\":\"$role\""
   if [ -n "$toolName" ]; then
-    newMessage+=",\"name\":\"$toolName\""
+    newMessage+=",\"tool_name\":\"$toolName\""
   fi
   newMessage+=",\"content\":$(safeJson "$message")}"
   if [ -n "$messages" ]; then
