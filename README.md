@@ -4,6 +4,8 @@
 
 Bash scripts to chat with tool using models. Add new tools to your shed with ease. Runs on Ollama.
 
+For Help and Discussions please join the [Attogram Discord Channel](https://discord.gg/BGQJCbYVBa)
+
 ## Usage
 
 Run the toolshed:
