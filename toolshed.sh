@@ -9,7 +9,7 @@
 #  ./toolshed.sh modelName
 
 NAME="ollama-bash-toolshed"
-VERSION="0.45.1"
+VERSION="0.45.2"
 URL="https://github.com/attogram/ollama-bash-toolshed"
 
 DEBUG_MODE="0" # change with: /config verbose [on|off]
