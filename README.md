@@ -6,6 +6,15 @@ Bash scripts to chat with tool using models. Add new tools to your shed with eas
 
 For Help and Discussions please join the [Attogram Discord Channel](https://discord.gg/BGQJCbYVBa)
 
+![Release](https://img.shields.io/github/v/release/attogram/ollama-bash-toolshed?style=flat)
+![License](https://img.shields.io/github/license/attogram/ollama-bash-toolshed?style=flat)
+![Bash ≥3.2](https://img.shields.io/badge/bash-%3E=3.2-blue?style=flat)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/attogram/ollama-bash-toolshed?style=flat)
+![GitHub stars](https://img.shields.io/github/stars/attogram/ollama-bash-toolshed?style=flat)
+![GitHub watchers](https://img.shields.io/github/watchers/attogram/ollama-bash-toolshed?style=flat)
+![Forks](https://img.shields.io/github/forks/attogram/ollama-bash-toolshed?style=flat)
+![Issues](https://img.shields.io/github/issues/attogram/ollama-bash-toolshed?style=flat)
+
 ## Usage
 
 Run the toolshed:
